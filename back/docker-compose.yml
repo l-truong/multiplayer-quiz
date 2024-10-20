@@ -20,5 +20,15 @@ services:
     volumes:
       - mongo-data:/data/db  # Persistent storage for MongoDB data
 
+  test:  # Service for running tests
+    build: .  # Builds Dockerfile from the current directory
+    command: npm test  # Change this if your test command is different
+    depends_on:
+      - mongo  # Wait for MongoDB to start
+    environment:
+      - NODE_ENV=test  # Set NODE_ENV to test
+    volumes:
+      - .:/usr/src/app  # Mounts your project directory inside the container
+
 volumes:
   mongo-data:  # Defines a named volume for MongoDB data persistence
