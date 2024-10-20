@@ -16,3 +16,8 @@ back/config.json
 # Build output
 front/dist
 front/build
+
+# Docker
+#back/.dockerignore
+#back/Dockerfile
+#back/docker-compose.yml

@@ -1,0 +1,24 @@
+version: '3.8'  # Specify the Docker Compose version
+
+services:
+  app:  # This is your Node.js app service
+    build: .  # Builds Dockerfile from the current directory
+    ports:
+      - "3000:3000"  # Maps container port 3000 to localhost:3000
+    volumes:
+      - .:/usr/src/app  # Mounts your project directory inside the container
+      - /usr/src/app/node_modules  # Ensures node_modules inside the container are isolated
+    environment:  # You can pass environment variables here
+      - NODE_ENV=development
+    depends_on:  # Wait for the database to start before the app
+      - mongo
+
+  mongo:  # This is the MongoDB service
+    image: mongo:6  # Uses the official MongoDB image
+    ports:
+      - "27017:27017"  # Exposes MongoDB on port 27017
+    volumes:
+      - mongo-data:/data/db  # Persistent storage for MongoDB data
+
+volumes:
+  mongo-data:  # Defines a named volume for MongoDB data persistence
