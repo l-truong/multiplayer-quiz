@@ -1,5 +1,9 @@
 {
     "welcomeMessage": "Bienvenue au Quiz Multijoueur",
     "startQuiz": "Commencer le Quiz",
-    "submit": "Soumettre"
+    "submit": "Soumettre",
+    "return": "Retour",
+    "quiz": {
+        "question": "Question"
+    }
 }

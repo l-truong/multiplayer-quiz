@@ -1,5 +1,9 @@
 {
     "welcomeMessage": "Welcome to the Multiplayer Quiz",
     "startQuiz": "Start Quiz",
-    "submit": "Submit"
+    "submit": "Submit",
+    "return": "Return",
+    "quiz": {
+        "question": "Question"
+    }
 }

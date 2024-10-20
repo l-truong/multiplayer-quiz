@@ -11,9 +11,9 @@ const Category = require('../models/category');
 router.get('/', async (req, res) => {
     try {
         const categories = await Category.find();
-        res.json(categories); //test ok
+        res.json(categories);
     } catch (err) {
-        res.status(500).json({ message: err.message }); //test ok
+        res.status(500).json({ message: err.message });
     }
 });
 
@@ -23,15 +23,15 @@ router.get('/:id', async (req, res, next) => {
     try {
         category = await Category.findById(req.params.id);
         if (category === null) {
-            return res.status(404).json({ message: 'Cannot find category' }); //test ok
+            return res.status(404).json({ message: 'Category not found' });
         }
     } catch (err) {
-        return res.status(500).json({ message: err.message }); //test ok
+        return res.status(500).json({ message: err.message });
     }
     res.category = category;
     next();
 }, (req, res) => {
-    res.json(res.category); //test ok
+    res.json(res.category);
 });
 
 
@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
         return res.status(400).json({
             message: 'Missing parameters',
             missing: missingParams
-        }); //test ok
+        });
     }
 
     // Check if name parameters and description parameters are strings
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
         return res.status(400).json({
             message: 'Parameters must be strings',
             invalidParams
-        }); //test ok
+        });
     }
 
     const category = new Category({
@@ -82,10 +82,10 @@ router.post('/', async (req, res) => {
 
     try {
         const newCategory = await category.save();
-        res.status(201).json(newCategory); //test ok
+        res.status(201).json(newCategory);
     } catch (err) {
         res.status(400).json({ message: err.message });
-    } //test ok
+    }
 });
 
 
@@ -99,7 +99,7 @@ router.patch('/:id', async (req, res, next) => {
     try {
         category = await Category.findById(req.params.id);
         if (category === null) {
-            return res.status(404).json({ message: 'Cannot find category' });
+            return res.status(404).json({ message: 'Category not found' });
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });
@@ -111,10 +111,10 @@ router.patch('/:id', async (req, res, next) => {
 
     // Check if name parameter description parameters are strings
     const invalidParams = {};
-    if (typeof req.body.name !== 'string') {
+    if (req.body.name !== undefined && typeof req.body.name !== 'string') {
         invalidParams.name = req.body.name;
     }
-    if (typeof req.body.description !== 'string') {
+    if (req.body.description !== undefined && typeof req.body.description !== 'string') {
         invalidParams.description = req.body.description;
     }
 
@@ -147,7 +147,7 @@ router.patch('/:id', async (req, res, next) => {
         const updatedCategory = await res.category.save();
         res.json(updatedCategory);
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        res.status(400).json({ message: err.message }); 
     }
 });
 
@@ -162,7 +162,7 @@ router.delete('/:id', async (req, res, next) => {
     try {
         category = await Category.findById(req.params.id);
         if (category === null) {
-            return res.status(404).json({ message: 'Cannot find category' });
+            return res.status(404).json({ message: 'Category not found' });
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });

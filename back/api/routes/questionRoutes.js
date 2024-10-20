@@ -12,10 +12,34 @@ const Category = require('../models/category');
 router.get('/', async (req, res) => {
     try {
         const questions = await Question.find();
-        res.json(questions);
+        res.json(questions); //test ok
+    } catch (err) {
+        res.status(500).json({ message: err.message });  //test ok
+    }
+});
+
+// Get random array of questions of length size
+router.get('/random/:random?', async (req, res) => {    
+    // Check for missing parameters random
+    const { random } = req.params;
+    if (random === undefined) {
+        return res.status(400).json({ message: 'Parameter is required' });
+    }
+
+    // Check if random parameter is a number and positif
+    const length = parseInt(random, 10);
+    if (isNaN(length) || length < 1) {
+        return res.status(400).json({ message: 'Parameter must be a positive number' });
+    }
+
+    try {
+        const questions = await Question.find();
+        const shuffledQuestions = questions.sort(() => 0.5 - Math.random());
+        const selectedQuestions = shuffledQuestions.slice(0, length);
+        res.json(selectedQuestions);
     } catch (err) {
         res.status(500).json({ message: err.message });
-    }
+    } 
 });
 
 // Get one question
@@ -24,32 +48,15 @@ router.get('/:id', async (req, res, next) => {
     try {
         question = await Question.findById(req.params.id);
         if (question === null) {
-            return res.status(404).json({ message: 'Cannot find question' });
+            return res.status(404).json({ message: 'Question not found' });  //test ok
         }
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });  //test ok
     }
     res.question = question;
     next();
 }, (req, res) => {
-    res.json(res.question);
-});
-
-// Get random array of questions of length size
-router.get('/length/:length', async (req, res) => {
-    const length = parseInt(req.params.length);
-    if (isNaN(length)) {
-        return res.status(400).json({ message: 'Length must be a number' });
-    }
-
-    try {
-        const questions = await Question.find();
-        const shuffledQuestions = questions.sort(() => 0.5 - Math.random());        
-        const selectedQuestions = shuffledQuestions.slice(0, length);        
-        res.json(selectedQuestions);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+    res.json(res.question);  //test ok
 });
 
 

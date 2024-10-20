@@ -1,34 +1,28 @@
 <template>
-  <div id="home">
-    <h1>This is Home View</h1>  
-  </div>    
   <div>
-      <h1>{{ $t('welcomeMessage') }}</h1>
-      <button>{{ $t('startQuiz') }}</button>
+    <h1>{{ $t('welcomeMessage') }}</h1>
+    <div>
+      <button @click="goToQuiz">{{ $t('startQuiz') }}</button>
     </div>
-  <div>
-    <select v-model="$i18n.locale">
-      <option value="en">English</option>
-      <option value="fr">Français</option>
-    </select>
-  </div>
+  </div>  
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
+
 export default {
   name: "HomeView",
+  setup() {
+    const router = useRouter();
+
+    const goToQuiz = () => {
+      router.push('/quiz');
+    };
+
+    return { goToQuiz };
+  }
 };
 </script>
 
-<style lang="scss">
-#home {
-  h1 {
-    color: pink;
-    font-size: 2rem;
-
-    &:hover {
-      color: palevioletred;
-    }
-  }
-}
+<style lang="scss" scoped>
 </style>

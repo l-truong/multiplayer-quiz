@@ -1,9 +1,9 @@
-<template>
-  <nav>
-    <router-link to="/">Home</router-link><br>
-    <router-link to="/student">Student</router-link><br>
-  </nav>
-  <router-view/>
+<template>  
+  <router-view/>  
+  <select v-model="$i18n.locale">
+    <option value="en">English</option>
+    <option value="fr">Français</option>
+  </select>
 </template>
 
 <script>
