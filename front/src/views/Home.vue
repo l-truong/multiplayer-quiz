@@ -1,8 +1,12 @@
 <template>
-  <div>
-    <h1>{{ $t('welcomeMessage') }}</h1>
-    <div>
-      <button @click="goToQuiz">{{ $t('startQuiz') }}</button>
+  <div class="container">
+    <div class="container-col1">
+      <h1>{{ $t('welcomeMessage') }}</h1>
+      <div>
+        <button @click="goToQuiz">{{ $t('startQuiz') }}</button>
+      </div>
+    </div>
+    <div class="container-col2">
     </div>
   </div>  
 </template>
@@ -24,5 +28,6 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+
 </style>

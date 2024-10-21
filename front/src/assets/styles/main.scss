@@ -1,0 +1,56 @@
+html, body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; 
+    width: 100vw; 
+    margin: 0;             
+    background: lightgray;
+}
+
+button {
+    appearance: none;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    background-color: #2cce7d;
+    color: #2d213f;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    border-radius: 0.5rem;
+  
+    &:disabled {
+      opacity: 0.5;
+    }
+}
+
+#app { 
+    height: 60vh;
+    width: 80%;
+    background: grey;  
+
+    .container {
+        display: flex;
+        flex-direction: row;
+        height: 100%;          
+        margin: 0;  
+        padding: 0;
+        background: darkgray;  
+
+        &-col1 {
+            height: 100%;
+            width: 30%;        
+            padding: 1em;
+            background: antiquewhite;  
+        }
+
+        &-col2 {
+            height: 100%;
+            width: 70%;
+            padding: 1em;
+            background: aquamarine;
+        }
+    } 
+}

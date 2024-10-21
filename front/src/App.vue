@@ -1,9 +1,11 @@
 <template>  
   <router-view/>  
-  <select v-model="$i18n.locale">
-    <option value="en">English</option>
-    <option value="fr">Français</option>
-  </select>
+  <div class="languageSelector">
+    <select v-model="$i18n.locale" >
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+    </select>
+  </div>
 </template>
 
 <script>
@@ -13,5 +15,12 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+#app {
+  .languageSelector {
+    display: flex;
+    justify-content: right;
+    padding: 0.5em 0em;
+  }
+}
 </style>

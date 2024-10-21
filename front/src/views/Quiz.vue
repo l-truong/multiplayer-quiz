@@ -1,55 +1,62 @@
 <template>
-  <!--Main container-->    
-  <div class="app">
-    <!--Questions container-->
-    <section class="progress-container">            
-			<span class="progress-question">{{ $t('quiz.question') }} {{ currentQuestion + 1 }}/{{ questions.length }}</span>
-      <div class="progress-bar" :style="{ width: progressWidth }"></div>
-      Theme <br><br>
-      Difficulté <br><br>
-      Time<br><br>
-    </section>
-    <section class="quiz-container" v-if="!quizCompleted">	
-      <div class="quiz-info">
-				<span class="question">{{ getCurrentQuestion.question }}</span>
-			</div>	
-			<div class="options">
-				<label 
-					v-for="(option, index) in getCurrentQuestion.options" 
-					:key="'option' + index" 
-					:class="`option ${
-						getCurrentQuestion.selected == index 
-							? index == getCurrentQuestion.answer 
-								? 'correct' 
-								: 'wrong'
-							: ''
-					} ${
-						getCurrentQuestion.selected != null &&
-						index != getCurrentQuestion.selected
-							? 'disabled'
-							: ''
-					}`">
-					<input 
-						type="radio" 
-						:id="'option' + index" 
-						:name="getCurrentQuestion.index" 
-						:value="index" 
-						v-model="getCurrentQuestion.selected" 
-						:disabled="getCurrentQuestion.selected"
-						@change="setAnswer" 
-					/>
-					<span>{{ option }}</span>
-				</label>
-			</div>			
-		</section>
-    <section v-else>
-			<h2>You have finished the quiz!</h2>
-			<p>Your score is {{ score }}/{{ questions.length }}</p>
-		</section>
-  </div>
-  <div>
-    <button @click="goToHome">{{ $t('return') }}</button>
-  </div>
+  <div class="container">
+    <div class="container-col1"> 
+      <div class="progress-question">
+        <span>{{ $t('quiz.question') }}</span><span>{{ currentQuestion + 1 }}/{{ questions.length }}</span>
+      </div>          
+      <div class="progress-container">            
+        <div class="progress-bar" :style="{ width: progressWidth }"></div>
+      </div>
+      <div>
+        <span>Theme</span><span>{{ getCurrentQuestion.theme }}</span>
+      </div>
+      <div>
+        Time
+      </div>
+      <div>
+        <button @click="goToHome">{{ $t('return') }}</button>
+      </div>
+    </div>
+    <div class="container-col2">
+      <section class="quiz-container" v-if="!quizCompleted">	
+        <div class="quiz-info">
+          <span class="question">{{ getCurrentQuestion.question }}</span>
+        </div>	
+        <div class="options">
+          <label 
+            v-for="(option, index) in getCurrentQuestion.options" 
+            :key="'option' + index" 
+            :class="`option ${
+              getCurrentQuestion.selected == index 
+                ? index == getCurrentQuestion.answer 
+                  ? 'correct' 
+                  : 'wrong'
+                : ''
+            } ${
+              getCurrentQuestion.selected != null &&
+              index != getCurrentQuestion.selected
+                ? 'disabled'
+                : ''
+            }`">
+            <input 
+              type="radio" 
+              :id="'option' + index" 
+              :name="getCurrentQuestion.index" 
+              :value="index" 
+              v-model="getCurrentQuestion.selected" 
+              :disabled="getCurrentQuestion.selected"
+              @change="setAnswer" 
+            />
+            <span>{{ option }}</span>
+          </label>
+        </div>			
+      </section>
+      <section v-else>
+        <h2>You have finished the quiz!</h2>
+        <p>Your score is {{ score }}/{{ questions.length }}</p>
+      </section>
+    </div>  
+  </div>  
 </template>
   
 <script>
@@ -57,6 +64,13 @@ import { useRouter } from 'vue-router';
 
 export default {
   name: "QuizView",
+  setup() {
+    const router = useRouter();
+    const goToHome = () => {
+      router.push('/');
+    };
+    return { goToHome };
+  },
   data() {
     return {
       progress: 0,
@@ -71,6 +85,7 @@ export default {
             'A library',
             'A type of hat'
           ],
+          theme: "theme A",
           selected: null
         },
         {
@@ -80,7 +95,8 @@ export default {
             'Eating a delicious snack',
             'Viewing things',
             'State management'
-          ],
+          ],          
+          theme: "theme B",
           selected: null
         },
         {
@@ -91,6 +107,7 @@ export default {
             'A routing library for Vue',
             'Burger sauce'
           ],
+          theme: "theme C",
           selected: null
         }
       ]
@@ -106,10 +123,6 @@ export default {
         return;
       }
       this.quizCompleted = true;
-    },
-    goToHome() {
-      const router = useRouter();
-      router.push('/');
     }
   },  
   computed: {
@@ -120,8 +133,12 @@ export default {
       return `${ this.currentQuestion /  this.questions.length * 100 }%`;
     },
     score() {
+      console.log("score")
+
       let value = 0;
       this.questions.forEach(q => {
+        console.log("q.selected", q.selected)
+        
         if (q.selected != null && q.answer === q.selected) {
           value++;
         }
@@ -139,133 +156,90 @@ export default {
 
 
 <style lang="scss">
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Montserrat', sans-serif;
-}
 
-body {
-  background-color: #271c36;
-  color: #FFF;
-}
-
-h1 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-}
-
-h2 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-p {
-  color: #8F8F8F;
-  font-size: 1.5rem;
-  text-align: center;
-}
-
-button {
-  appearance: none;
-  outline: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  background-color: #2cce7d;
-  color: #2d213f;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 1.2rem;
-  border-radius: 0.5rem;
-
-  &:disabled {
-    opacity: 0.5;
-  }
-}
-
-.app {
+.container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2rem;
   height: 100vh;
 
-  .progress-container {
-    width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    height: 30px;
+  &-col1 {
+    .progress-question {
 
-    .progress-bar {
-      height: 100%;
-      background-color: #76c7c0;
-      transition: width 0.3s ease;
+    }
+    .progress-container {      
+      height: 0.4em;
+      width: 100%;
+      border-radius: 0.5em;
+      background: #ffffff;
+
+      .progress-bar {
+        height: 100%;        
+        border-radius: 0.5em;
+        background-color: #76c7c0;
+        transition: width 0.3s ease;
+      }
     }
   }
 
-  .quiz-container {
-    background-color: #382a4b;
-    padding: 1rem;
-    width: 100%;
-    max-width: 640px;
 
-    .quiz-info {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
+  &-col2 {
+    /*.quiz-container {
+      background-color: #382a4b;
+      padding: 1rem;
+      width: 100%;
+      max-width: 640px;
 
-      .question {
-        color: #8F8F8F;
-        font-size: 1.25rem;
-      }
+      .quiz-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
 
-      &.progress-question {
-        color: #FFF;
-        font-size: 1.25rem;
-      }
-    }
-
-    .options {
-      margin-bottom: 1rem;
-
-      .option {
-        padding: 1rem;
-        display: block;
-        background-color: #271c36;
-        margin-bottom: 0.5rem;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        color: #FFFFFF;
-
-        &:hover {
-          background-color: #2d213f;
-        }
-
-        &.correct {
-          background-color: #2cce7d;
-        }
-
-        &.wrong {
-          background-color: #ff5a5f;
-        }
-
-        &:last-of-type {
-          margin-bottom: 0;
-        }
-
-        &.disabled {
-          opacity: 0.5;
-        }
-
-        input {
-          display: none;
+        .question {
+          color: #8F8F8F;
+          font-size: 1.25rem;
         }
       }
-    }
+
+      .options {
+        margin-bottom: 1rem;
+
+        .option {
+          padding: 1rem;
+          display: block;
+          background-color: #271c36;
+          margin-bottom: 0.5rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          color: #FFFFFF;
+
+          &:hover {
+            background-color: #2d213f;
+          }
+
+          &.correct {
+            background-color: #2cce7d;
+          }
+
+          &.wrong {
+            background-color: #ff5a5f;
+          }
+
+          &:last-of-type {
+            margin-bottom: 0;
+          }
+
+          &.disabled {
+            opacity: 0.5;
+          }
+
+          input {
+            display: none;
+          }
+        }
+      }
+    }*/
   }
 }
 </style>
