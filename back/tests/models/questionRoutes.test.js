@@ -18,7 +18,7 @@ beforeEach(() => {
         createdAt: "2024-10-06T15:09:53.744Z",
         updatedAt: "2024-10-06T15:09:53.744Z",
         __v: 0
-    };
+    };   
 });
 
 afterEach(() => {
@@ -49,19 +49,41 @@ describe('GET /questions', () => {
 // GET /questions/random/:random
 describe('GET /questions/random/:random', () => {
     // TODO
-    /*it('should return 404 error if length is not a number', async () => {
-        const res = await request(app).get('/length/abc');
-        expect(res.status).toBe(404);
-        expect(res.body.message).toBe('Length must be a number');
+    it('should return 400 if the random parameter is missing', async () => {
+        const res = await request(app).get('/questions/random/');
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe('Parameter is required');
     });
 
-    it('should return 500 error if fetching questions fails', async () => {
-        Question.find = jest.fn().mockRejectedValue(new Error('Database error'));
+    it('should return 400 if the random parameter is not a positive number', async () => {
+        const response = await request(app).get('/questions/random/0');
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Parameter must be a positive number');
 
-        const res = await request(app).get('/length/2');
+        const responseNegative = await request(app).get('/questions/random/-5');
+        expect(responseNegative.status).toBe(400);
+        expect(responseNegative.body.message).toBe('Parameter must be a positive number');
+
+        const responseNaN = await request(app).get('/questions/random/abc');
+        expect(responseNaN.status).toBe(400);
+        expect(responseNaN.body.message).toBe('Parameter must be a positive number');
+    });
+
+    //TODO
+    it('should return a list of questions when the random parameter is valid', async () => {       
+        const length = 2;
+        const response = await request(app).get(`/questions/random/${length}`);
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveLength(length);
+        expect(response.body).toEqual(expect.arrayContaining(mockQuestions));
+    });
+
+    it('should return 500 error on server failure', async () => {
+        Question.find.mockRejectedValue(new Error('Database error'));
+        const res = await request(app).get('/questions/random/1');
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('Database error');
-    });*/
+    });
 });
 
 // GET /questions/:id

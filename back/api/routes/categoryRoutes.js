@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
     if (typeof req.body.description !== 'string') {
         invalidParams.description = req.body.description;
     }
-    if (typeof req.body.language !== 'string' || !Category.schema.path('language').enumValues.includes(req.body.language)) {
+    if (typeof req.body.language !== 'string') {
         invalidParams.language = req.body.language;
     }
 
@@ -125,10 +125,7 @@ router.patch('/:id', async (req, res, next) => {
     if (req.body.description !== undefined && typeof req.body.description !== 'string') {
         invalidParams.description = req.body.description;
     }
-    if (req.body.description !== undefined && typeof req.body.description !== 'string') {
-        invalidParams.description = req.body.description;
-    }
-    if (req.body.language !== undefined && typeof req.body.language !== 'string' || !Category.schema.path('language').enumValues.includes(req.body.language)) {
+    if (req.body.language !== undefined && typeof req.body.language !== 'string') {
         invalidParams.language = req.body.language;
     }
 
@@ -138,8 +135,8 @@ router.patch('/:id', async (req, res, next) => {
             message: 'Parameters must be strings',
             invalidParams
         });
-    }
-    if (!Category.schema.path('language').enumValues.includes(req.body.language)) {
+    }    
+    if (req.body.language !== undefined && !Category.schema.path('language').enumValues.includes(req.body.language)) {
         return res.status(400).json({
             message: 'Language must be part of ',
             acceptedLanguage: Category.schema.path('language').enumValues

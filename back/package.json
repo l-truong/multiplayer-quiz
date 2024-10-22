@@ -23,13 +23,17 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "mongoose": "^8.7.0",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "supertest": "^7.0.0"
   },
   "jest": {
-    "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|js)$",
     "roots": [
-        "<rootDir>/tests"
+      "<rootDir>/tests"
     ]
   }
 }
