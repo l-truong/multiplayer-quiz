@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/category');
 
-
 /********/
 /* GET */
 /********/
@@ -43,7 +42,7 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res) => {
     // Check for missing parameters
     const missingParams = [];
-    const requiredParams = ['name', 'description'];
+    const requiredParams = ['name', 'description', 'language'];
 
     requiredParams.forEach(param => {        
         if (req.body[param] === undefined) {
@@ -58,7 +57,7 @@ router.post('/', async (req, res) => {
         });
     }
 
-    // Check if name parameters and description parameters are strings
+    // Check if parameters are strings and valid
     const invalidParams = {};
     if (typeof req.body.name !== 'string') {
         invalidParams.name = req.body.name;
@@ -66,12 +65,21 @@ router.post('/', async (req, res) => {
     if (typeof req.body.description !== 'string') {
         invalidParams.description = req.body.description;
     }
+    if (typeof req.body.language !== 'string' || !Category.schema.path('language').enumValues.includes(req.body.language)) {
+        invalidParams.language = req.body.language;
+    }
 
     // If there are invalid parameters, return an error response
     if (Object.keys(invalidParams).length > 0) {
         return res.status(400).json({
             message: 'Parameters must be strings',
             invalidParams
+        });
+    }
+    if (!Category.schema.path('language').enumValues.includes(req.body.language)) {
+        return res.status(400).json({
+            message: 'Language must be part of ',
+            acceptedLanguage: Category.schema.path('language').enumValues
         });
     }
 
@@ -109,13 +117,19 @@ router.patch('/:id', async (req, res, next) => {
 }, async (req, res) => {
     let updated = false;
 
-    // Check if name parameter description parameters are strings
+    // Check if parameters are strings and valid
     const invalidParams = {};
     if (req.body.name !== undefined && typeof req.body.name !== 'string') {
         invalidParams.name = req.body.name;
     }
     if (req.body.description !== undefined && typeof req.body.description !== 'string') {
         invalidParams.description = req.body.description;
+    }
+    if (req.body.description !== undefined && typeof req.body.description !== 'string') {
+        invalidParams.description = req.body.description;
+    }
+    if (req.body.language !== undefined && typeof req.body.language !== 'string' || !Category.schema.path('language').enumValues.includes(req.body.language)) {
+        invalidParams.language = req.body.language;
     }
 
     // If there are invalid parameters, return an error response
@@ -125,6 +139,12 @@ router.patch('/:id', async (req, res, next) => {
             invalidParams
         });
     }
+    if (!Category.schema.path('language').enumValues.includes(req.body.language)) {
+        return res.status(400).json({
+            message: 'Language must be part of ',
+            acceptedLanguage: Category.schema.path('language').enumValues
+        });
+    }
 
     if (req.body.name !== null && req.body.name !== res.category.name) {        
         res.category.name = req.body.name;
@@ -132,6 +152,10 @@ router.patch('/:id', async (req, res, next) => {
     }
     if (req.body.description !== null && req.body.description !== res.category.description) {
         res.category.description = req.body.description;
+        updated = true;
+    }
+    if (req.body.language !== null && req.body.language !== res.category.language) {
+        res.category.language = req.body.language;
         updated = true;
     }
 
@@ -184,6 +208,7 @@ router.delete('/:id', async (req, res, next) => {
                 categoryId: deletedCategory.categoryId,
                 name: deletedCategory.name,
                 description: deletedCategory.description,
+                language: deletedCategory.language,
                 createdAt: deletedCategory.createdAt,
                 updatedAt: deletedCategory.updatedAt,
                 __v: deletedCategory.__v,
