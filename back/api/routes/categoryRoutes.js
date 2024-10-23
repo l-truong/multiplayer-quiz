@@ -96,6 +96,12 @@ router.post('/', async (req, res) => {
     }
 });
 
+// todo
+// Create new categories
+
+// todo
+// Create new categories with CSV
+
 
 /********/
 /* UPDATE */
