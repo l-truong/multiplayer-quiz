@@ -19,6 +19,20 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
+    accountStatus: {
+        type: String,
+        enum: ['active', 'deactivated', 'suspended'],
+        default: 'deactivated'
+    },
+    passwordResetToken: { 
+        type: String 
+    },
+    passwordResetExpires: { 
+        type: Date 
+    },
+    lastLogin: { 
+        type: Date 
+    },
     score: { 
         type: Number, 
         default: 0 

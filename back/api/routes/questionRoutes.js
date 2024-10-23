@@ -12,9 +12,9 @@ const Category = require('../models/category');
 router.get('/', async (req, res) => {
     try {
         const questions = await Question.find();
-        res.json(questions); //test ok
+        res.json(questions);
     } catch (err) {
-        res.status(500).json({ message: err.message });  //test ok
+        res.status(500).json({ message: err.message }); 
     }
 });
 
@@ -48,15 +48,15 @@ router.get('/:id', async (req, res, next) => {
     try {
         question = await Question.findById(req.params.id);
         if (question === null) {
-            return res.status(404).json({ message: 'Question not found' });  //test ok
+            return res.status(404).json({ message: 'Question not found' }); 
         }
     } catch (err) {
-        return res.status(500).json({ message: err.message });  //test ok
+        return res.status(500).json({ message: err.message }); 
     }
     res.question = question;
     next();
 }, (req, res) => {
-    res.json(res.question);  //test ok
+    res.json(res.question); 
 });
 
 
@@ -164,8 +164,140 @@ router.post('/', async (req, res) => {
     }
 });
 
-// todo
-// Create new questions
+// Create a list of questions
+router.post('/bulk', async (req, res) => {
+    const questions = req.body.questions;
+
+    if (!Array.isArray(questions)) {
+        return res.status(400).json({
+            message: 'Questions must be an array'
+        });
+    }
+
+    const errors = [];
+    const createdQuestions = [];
+
+    const session = await Question.startSession(); // Start a session for the transaction
+    session.startTransaction(); // Start the transaction
+
+    try {
+        for (const questionData of questions) {
+            // Validation logic (same as before)
+            const missingParams = [];
+            const requiredParams = ['questionText', 'options', 'correctAnswer', 'categoryId'];   
+
+            requiredParams.forEach(param => {
+                if (questionData[param] === undefined) {
+                    missingParams.push(param);
+                }
+            });
+
+            if (missingParams.length > 0) {
+                errors.push({
+                    question: questionData,
+                    error: 'Missing parameters',
+                    missing: missingParams
+                });
+                continue;
+            }
+
+            if (!Array.isArray(questionData.options) || questionData.options.length !== 4) {
+                errors.push({
+                    question: questionData,
+                    error: 'Options must be an array of exactly 4 elements',
+                    invalidParams: {
+                        options: questionData.options
+                    }
+                });
+                continue;
+            }
+
+            const hasInvalidOptions = questionData.options.some(option => option === null || option === '');
+            if (hasInvalidOptions) {
+                errors.push({
+                    question: questionData,
+                    error: 'Options cannot contain null or empty elements',
+                    invalidParams: {
+                        options: questionData.options
+                    }
+                });
+                continue;
+            }
+
+            if (!questionData.options.includes(questionData.correctAnswer)) {
+                errors.push({
+                    question: questionData,
+                    error: 'Correct answer must be one of the options',
+                    invalidParams: {
+                        correctAnswer: questionData.correctAnswer
+                    }
+                });
+                continue;
+            }
+
+            const invalidParams = {};
+            if (typeof questionData.questionText !== 'string') {
+                invalidParams.questionText = questionData.questionText;
+            }
+            if (typeof questionData.correctAnswer !== 'string') {
+                invalidParams.correctAnswer = questionData.correctAnswer;
+            }
+            if (typeof questionData.explanation !== 'string') {
+                invalidParams.explanation = questionData.explanation;
+            }
+            if (typeof questionData.categoryId !== 'string') {
+                invalidParams.categoryId = questionData.categoryId;
+            }
+
+            if (Object.keys(invalidParams).length > 0) {
+                errors.push({
+                    question: questionData,
+                    error: 'Parameters must be strings',
+                    invalidParams
+                });
+                continue;
+            }
+
+            // Check if categoryId exists
+            const categoryExists = await Category.findById(questionData.categoryId).session(session);
+            if (!categoryExists) {
+                errors.push({
+                    question: questionData,
+                    error: 'Invalid categoryId. Category does not exist',
+                    invalidParams: {
+                        categoryId: questionData.categoryId
+                    }
+                });
+                continue;
+            }
+
+            const question = new Question({
+                questionText: questionData.questionText,
+                options: questionData.options,
+                correctAnswer: questionData.correctAnswer,
+                explanation: questionData.explanation,
+                categoryId: questionData.categoryId
+            });
+
+            const newQuestion = await question.save({ session });
+            createdQuestions.push(newQuestion);
+        }
+
+        if (errors.length > 0) {
+            await session.abortTransaction(); // Rollback if there are errors
+            return res.status(400).json({ message: 'Some questions could not be processed', errors });
+        }
+
+        await session.commitTransaction(); // Commit if all went well
+        res.status(201).json({ message: 'Questions created successfully', questions: createdQuestions });
+
+    } catch (err) {
+        await session.abortTransaction(); // Rollback on error
+        res.status(500).json({ message: 'An error occurred', error: err.message });
+    } finally {
+        session.endSession(); // End the session
+    }
+});
 
 // todo
 // Create new questions with CSV
@@ -342,7 +474,7 @@ router.delete('/:id', async (req, res, next) => {
     try {
         question = await Question.findById(req.params.id);
         if (question === null) {
-            return res.status(404).json({ message: 'Cannot find question' });
+            return res.status(404).json({ message: 'Question not found' });
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });

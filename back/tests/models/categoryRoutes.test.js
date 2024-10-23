@@ -8,6 +8,7 @@ const app = express();
 app.use(express.json()); // Middleware for JSON parsing
 app.use('/categories', router); // Use category routes
 
+let enumLanguage = ['eng', 'fr'];
 let mockCategory; // Mock category object
 beforeEach(() => {
     mockCategory = {
@@ -21,7 +22,6 @@ beforeEach(() => {
         __v: 0
     };
 });
-let enumLanguage = ['eng', 'fr'];
 
 afterEach(() => {
     jest.clearAllMocks(); // Clear mocks after each test

@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
@@ -33,6 +34,8 @@ router.get('/:id', async (req, res, next) => {
     res.json(res.user);
 });
 
+//todo
+//GET /api/users/me: Get current user information
 
 /********/
 /* POST */
@@ -42,7 +45,7 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res) => {
     // Check for missing parameters
     const missingParams = [];
-    const requiredParams = ['username', 'email', 'passwordHash'];
+    const requiredParams = ['username', 'email', 'password'];
 
     requiredParams.forEach(param => {        
         if (req.body[param] === undefined) {
@@ -62,8 +65,12 @@ router.post('/', async (req, res) => {
     if (typeof req.body.username !== 'string') {
         invalidParams.username = req.body.username;
     }
-    // todo check if email string
-    // todo check if password string
+    if (typeof req.body.email !== 'string') {
+        invalidParams.email = req.body.email;
+    }
+    if (typeof req.body.password !== 'string') {
+        invalidParams.password = req.body.password;
+    }
 
     // If there are invalid parameters, return an error response
     if (Object.keys(invalidParams).length > 0) {
@@ -72,18 +79,36 @@ router.post('/', async (req, res) => {
             invalidParams
         });
     }
-    // todo check if email follow rejex > return error 400
-    // todo check if password follow number, capital, lower, special > 12 + hash, return error 400
+
+    // Check if email is valid
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(req.body.email)) {
+        return res.status(400).json({
+            message: 'Invalid email format',
+            email: req.body.email
+        });
+    }
+
+    // Check if password is valid
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+    if (!passwordRegex.test(req.body.password)) {
+        return res.status(400).json({
+            message: 'Password must be at least 12 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+            password: req.body.password
+        });
+    }
     
-    //hash password
-
-    const user = new User({
-        username: req.body.username,
-        email: req.body.email,
-        passwordHash: req.body.passwordHash
-    });
-
+    // Hash password
     try {
+        const saltRounds = 10; // Adjust the salt rounds for security vs performance
+        const passwordHash = await bcrypt.hash(req.body.password, saltRounds);
+
+        const user = new User({
+            username: req.body.username,
+            email: req.body.email,
+            passwordHash: passwordHash
+        });
+
         const newUser = await user.save();
         res.status(201).json(newUser);
     } catch (err) {
@@ -91,22 +116,40 @@ router.post('/', async (req, res) => {
     }
 });
 
+//todo
+//POST /api/users/login: User login
+//POST /api/users/logout: User logout
+//POST /api/users/forgot-password: Send password reset link
+//POST /api/users/reset-password: Reset password
 
 /********/
 /* UPDATE */
 /********/
 
 // todo
-// Update user (beside password)
+//PATCH /api/users/
+///username: Update username
 
-// todo
-// Update user password
+//PATCH /api/users/
+///email: Update email (requires password)
 
+//PATCH /api/users/
+///password: Update password (requires current password)
+
+//PATCH /api/users/
+///profile: Update user profile
+
+//PATCH /api/users/
+///deactivate: Deactivate account
+
+//PATCH /api/users/
+///reactivate: Reactivate account
 
 /********/
 /* DELETE */
 /********/
 
+// todo (requires current password)
 // Delete user
 router.delete('/:id', async (req, res, next) => {
     let user;
