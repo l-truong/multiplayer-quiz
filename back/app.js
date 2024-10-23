@@ -7,7 +7,6 @@ const fs = require('fs');
 
 // Import route handlers
 const categoryRoutes = require('./api/routes/categoryRoutes');
-const gameRoutes = require('./api/routes/gameRoutes');
 const questionRoutes = require('./api/routes/questionRoutes');
 const userRoutes = require('./api/routes/userRoutes');
 
@@ -52,7 +51,6 @@ app.use((req, res, next) => {
 
 // Define route handlers
 app.use('/categories', categoryRoutes);
-app.use('/game', gameRoutes);
 app.use('/questions', questionRoutes);
 app.use('/users', userRoutes);
 
