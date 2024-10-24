@@ -21,6 +21,9 @@ beforeEach(() => {
         updatedAt: "2024-10-06T15:09:53.744Z",
         __v: 0
     };
+
+    // try to put this here 
+    // Category.schema = { path: () => ({ enumValues: enumLanguage }) };
 });
 
 afterEach(() => {
@@ -85,20 +88,20 @@ describe('POST /categories', () => {
     it('should return 400 error if missing parameters', async () => {
         Category.schema = { path: () => ({ enumValues: enumLanguage }) };
 
-        const resMissingName = await request(app).post('/categories').send({ name: 'Only Name' });
-        expect(resMissingName.status).toBe(400);
-        expect(resMissingName.body.message).toBe('Missing parameters');
-        expect(resMissingName.body.missing).toEqual(['description', 'language']);
+        const resOnlyName = await request(app).post('/categories').send({ name: 'Only Name' });
+        expect(resOnlyName.status).toBe(400);
+        expect(resOnlyName.body.message).toBe('Missing parameters');
+        expect(resOnlyName.body.missing).toEqual(['description', 'language']);
         
-        const resMissingDescription = await request(app).post('/categories').send({ description: 'Only Description' });
-        expect(resMissingDescription.status).toBe(400);
-        expect(resMissingDescription.body.message).toBe('Missing parameters');
-        expect(resMissingDescription.body.missing).toEqual(['name', 'language']);
+        const resOnlyDescription = await request(app).post('/categories').send({ description: 'Only Description' });
+        expect(resOnlyDescription.status).toBe(400);
+        expect(resOnlyDescription.body.message).toBe('Missing parameters');
+        expect(resOnlyDescription.body.missing).toEqual(['name', 'language']);
     
-        const resMissingLanguage = await request(app).post('/categories').send({ language: 'Only Language' });
-        expect(resMissingLanguage.status).toBe(400);
-        expect(resMissingLanguage.body.message).toBe('Missing parameters');
-        expect(resMissingLanguage.body.missing).toEqual(['name', 'description']);
+        const resOnlyLanguage = await request(app).post('/categories').send({ language: 'Only Language' });
+        expect(resOnlyLanguage.status).toBe(400);
+        expect(resOnlyLanguage.body.message).toBe('Missing parameters');
+        expect(resOnlyLanguage.body.missing).toEqual(['name', 'description']);
 
         const resMissingAllParameters = await request(app).post('/categories').send();
         expect(resMissingAllParameters.status).toBe(400);
@@ -153,6 +156,12 @@ describe('POST /categories', () => {
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('Validation error');
     });
+});
+
+describe('POST /categories/bulk', () => {       
+});
+
+describe('POST /categories/csv', () => {       
 });
 
 

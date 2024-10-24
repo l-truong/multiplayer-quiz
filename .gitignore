@@ -1,23 +1,25 @@
 # Folders
-images/
-
-# Node modules
+/images/
 back/node_modules/
-front/node_modules/
+/front/node_modules/
+
+# Build output
+/front/dist/
+/front/build/
 
 # Logs
-logs
+/logs
 *.log
 npm-debug.log*
 
 # Environment variables
-back/config.json
+/back/config.json
 
-# Build output
-front/dist
-front/build
+# IDE-specific files
+/.vscode/
+.VSCodeCounter
 
-# Docker
-#back/.dockerignore
-#back/Dockerfile
-#back/docker-compose.yml
+# Docker files
+#/back/.dockerignore
+#/back/Dockerfile
+#/back/docker-compose.yml

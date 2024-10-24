@@ -299,8 +299,10 @@ router.post('/bulk', async (req, res) => {
     }
 });
 
-// todo
-// Create new questions with CSV
+// Create a list of questions from csv
+router.post('/csv', async (req, res) => {
+    // todo
+})
 
 
 /********/

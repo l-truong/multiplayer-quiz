@@ -96,11 +96,15 @@ router.post('/', async (req, res) => {
     }
 });
 
-// todo
-// Create new categories
+// Create a list of categories
+router.post('/bulk', async (req, res) => {
+    //todo
+})
 
-// todo
-// Create new categories with CSV
+// Create a list of categories from csv
+router.post('/csv', async (req, res) => {
+    // todo
+})
 
 
 /********/

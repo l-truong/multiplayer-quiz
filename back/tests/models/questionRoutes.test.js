@@ -159,13 +159,68 @@ describe('GET /questions/:id', () => {
     });
 });
 
+
 /********/
 /* POST */
 /********/
 
+// POST /questions
+describe('POST /questions', () => {       
+    it('should return 400 error if missing parameters', async () => {
+        const resOnlyQuestionText = await request(app).post('/questions').send({ questionText: 'Only question text' });
+        expect(resOnlyQuestionText.status).toBe(400);
+        expect(resOnlyQuestionText.body.message).toBe('Missing parameters');
+        expect(resOnlyQuestionText.body.missing).toEqual(['options', 'correctAnswer', 'categoryId']);
+        
+        const resOnlyOptions = await request(app).post('/questions').send({ options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'] });
+        expect(resOnlyOptions.status).toBe(400);
+        expect(resOnlyOptions.body.message).toBe('Missing parameters');
+        expect(resOnlyOptions.body.missing).toEqual(['questionText', 'correctAnswer', 'categoryId']);
+
+        const resOnlyCorrectAnswer = await request(app).post('/questions').send({ correctAnswer: 'answer 2' });
+        expect(resOnlyCorrectAnswer.status).toBe(400);
+        expect(resOnlyCorrectAnswer.body.message).toBe('Missing parameters');
+        expect(resOnlyCorrectAnswer.body.missing).toEqual(['questionText', 'options', 'categoryId']);
+    
+        const resOnlyCategoryId = await request(app).post('/questions').send({ categoryId: 'categoryId'});
+        expect(resOnlyCategoryId.status).toBe(400);
+        expect(resOnlyCategoryId.body.message).toBe('Missing parameters');
+        expect(resOnlyCategoryId.body.missing).toEqual(['questionText', 'options', 'correctAnswer']);
+    
+        const resMissingAll = await request(app).post('/questions').send();
+        expect(resMissingAll.status).toBe(400);
+        expect(resMissingAll.body.message).toBe('Missing parameters');
+        expect(resMissingAll.body.missing).toEqual(['questionText', 'options', 'correctAnswer', 'categoryId']);
+    });
+
+    // Check if options parameter is an array and has exactly 4 elements
+
+    // Check for null or empty elements in options parameter
+
+    // Check if correctAnswer parameter is included in options parameter
+
+    // Check if rest of parameters are strings (questionText, correctAnswer, explanation, category Id)
+
+    // Check if categoryId parameters exists in the Category collection > link to categoryRoutes.test > check if general mock database test possible
+                
+    //create question
+
+    // general error
+});
+
+describe('POST /questions/bulk', () => {   
+    //todo    
+});
+
 /********/
 /* UPDATE */
 /********/
+
+// PATCH /categories/:id
+describe('PATCH /questions/:id', () => {
+    //todo
+});
+
 
 /********/
 /* DELETE */
