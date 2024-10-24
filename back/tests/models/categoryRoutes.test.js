@@ -9,9 +9,10 @@ app.use(express.json()); // Middleware for JSON parsing
 app.use('/categories', router); // Use category routes
 
 let enumLanguage = ['eng', 'fr'];
-let mockCategory; // Mock category object
+let mockCategories; // Mock caterogies list object
+let mockCategory;
 beforeEach(() => {
-    mockCategory = {
+    mockCategories = [ {
         _id: "6702a8418357fa576c95ea44",
         categoryId: "6702a8418357fa576c95ea43",
         name: "Test Category name",
@@ -20,10 +21,12 @@ beforeEach(() => {
         createdAt: "2024-10-06T15:09:53.744Z",
         updatedAt: "2024-10-06T15:09:53.744Z",
         __v: 0
-    };
+    }];
 
-    // try to put this here 
-    // Category.schema = { path: () => ({ enumValues: enumLanguage }) };
+    mockCategory = mockCategories[0];
+    Category.find.mockResolvedValue(mockCategories);
+
+    Category.schema = { path: () => ({ enumValues: enumLanguage }) };
 });
 
 afterEach(() => {
@@ -37,7 +40,6 @@ afterEach(() => {
 // GET /categories
 describe('GET /categories', () => {
     it('should return all categories', async () => {
-        Category.find.mockResolvedValue([mockCategory]);
         const res = await request(app).get('/categories');
         expect(res.status).toBe(200);
         expect(res.body).toEqual([mockCategory]);
@@ -54,7 +56,6 @@ describe('GET /categories', () => {
 // GET /categories/:id
 describe('GET /categories/:id', () => {
     it('should return 404 error if category not found', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         Category.findById.mockResolvedValue(null);
         const res = await request(app).get(`/categories/${mockCategory._id}`);
         expect(res.status).toBe(404);
@@ -62,7 +63,6 @@ describe('GET /categories/:id', () => {
     });
 
     it('should return 500 error if findById fails', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         Category.findById.mockRejectedValue(new Error('Database error'));
         const res = await request(app).get(`/categories/${mockCategory._id}`);
         expect(res.status).toBe(500);
@@ -70,7 +70,6 @@ describe('GET /categories/:id', () => {
     });
 
     it('should return a category by ID', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         Category.findById.mockResolvedValue(mockCategory);
         const res = await request(app).get(`/categories/${mockCategory._id}`);
         expect(res.status).toBe(200);
@@ -86,8 +85,7 @@ describe('GET /categories/:id', () => {
 // POST /categories
 describe('POST /categories', () => {       
     it('should return 400 error if missing parameters', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
-
+        Category.prototype.save.mockResolvedValue(mockCategory);
         const resOnlyName = await request(app).post('/categories').send({ name: 'Only Name' });
         expect(resOnlyName.status).toBe(400);
         expect(resOnlyName.body.message).toBe('Missing parameters');
@@ -110,7 +108,7 @@ describe('POST /categories', () => {
     });
 
     it('should return 400 error if parameters not string', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
+        Category.prototype.save.mockResolvedValue(mockCategory);
         const resNameNotString = await request(app).post('/categories').send({ name: 0, description: 'New Description', language: 'eng' });
         expect(resNameNotString.status).toBe(400);
         expect(resNameNotString.body.message).toBe('Parameters must be strings');
@@ -132,17 +130,15 @@ describe('POST /categories', () => {
         expect(resAllParametersNotString.body.invalidParams).toEqual({ name: 0, description: 1, language: 2 });
     });
 
-    it('should return 400 res if parameter language incorrect', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
+    it('should return 400 error if parameter language incorrect', async () => {
         Category.prototype.save.mockResolvedValue(mockCategory);
         const res = await request(app).post('/categories').send({ name: 'New Category', description: 'New Description', language: 'Not a language' });
         expect(res.status).toBe(400);
-        expect(res.body.message).toBe('Language must be part of ');
-        expect(res.body.acceptedLanguage).toEqual(enumLanguage);
+        expect(res.body.message).toBe('Language must be part of [' + enumLanguage + ']');
+        expect(res.body.invalidParams).toEqual('Not a language');
     });
 
     it('should create a new category', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         Category.prototype.save.mockResolvedValue(mockCategory);
         const res = await request(app).post('/categories').send({ name: 'New Category', description: 'New Description', language: 'eng' });
         expect(res.status).toBe(201);
@@ -150,7 +146,6 @@ describe('POST /categories', () => {
     });
 
     it('should return 400 error if save fails', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         Category.prototype.save.mockRejectedValue(new Error('Validation error'));
         const res = await request(app).post('/categories').send({ name: 'New Category', description: 'New Description', language: 'eng' });
         expect(res.status).toBe(400);
@@ -158,7 +153,47 @@ describe('POST /categories', () => {
     });
 });
 
-describe('POST /categories/bulk', () => {       
+describe('POST /categories/bulk', () => {
+    it('should return 400 error if missing categories parameter', async () => {
+
+    })
+
+    it('should return 400 error if missing parameters', async () => {
+
+    })
+
+    it('should return 400 error if parameters not string', async () => {
+
+    })
+
+    it('should return 400 res if parameter language incorrect', async () => {
+
+    })
+
+    it('should return 400 res if multiple error', async () => {
+
+    })
+
+    it('should create a new categories', async () => {
+
+    })
+
+    it('should return 400 error if save fails', async () => {
+        Category.prototype.save.mockRejectedValue(new Error('Validation error'));
+        const res = await request(app).post('/categories').send(
+            {
+                "categories": [
+                    {
+                        "name": "0",
+                        "description": "1",
+                        "language":"eng"
+                    }                
+                ]
+            });
+         console.log("res", res)
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe('Validation error');        
+    })
 });
 
 describe('POST /categories/csv', () => {       
@@ -172,7 +207,6 @@ describe('POST /categories/csv', () => {
 // PATCH /categories/:id
 describe('PATCH /categories/:id', () => {
     it('should return 404 if category not found', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         Category.findById.mockResolvedValue(null);
         const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Name' });
         expect(res.status).toBe(404);
@@ -180,7 +214,6 @@ describe('PATCH /categories/:id', () => {
     });
 
     it('should return 500 error if findById fails', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };       
         Category.findById.mockRejectedValue(new Error('Database error'));
         const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Name' });
@@ -189,7 +222,6 @@ describe('PATCH /categories/:id', () => {
     });  
 
     it('should return 400 error if parameter name is not a string', async () => {
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };        
         Category.findById.mockResolvedValue(categoryToUpdate);   
 
@@ -214,18 +246,16 @@ describe('PATCH /categories/:id', () => {
         expect(resAllParametersNotString.body.invalidParams).toEqual({ name: 0, description: 1, language: 2 });
     });   
 
-    it('should return 400 res if parameter language incorrect', async () => {       
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
+    it('should return 400 res if parameter language incorrect', async () => {     
         const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };        
         Category.findById.mockResolvedValue(categoryToUpdate);        
         const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ language: 'Not a language' });
         expect(res.status).toBe(400);
-        expect(res.body.message).toBe('Language must be part of ');
-        expect(res.body.acceptedLanguage).toEqual(enumLanguage);
+        expect(res.body.message).toBe('Language must be part of [' + enumLanguage + ']');
+        expect(res.body.invalidParams).toEqual('Not a language');
     });
 
     it('should return 200 res if no fields were updated', async () => {        
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };
         Category.findById.mockResolvedValue(categoryToUpdate);        
         const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Test Category name', description: 'Test Category description', language: 'eng' });
@@ -234,7 +264,6 @@ describe('PATCH /categories/:id', () => {
     }); 
 
     it('should update a category', async () => {        
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };        
         Category.findById.mockResolvedValue(categoryToUpdate);        
         const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Category name' });
@@ -243,7 +272,6 @@ describe('PATCH /categories/:id', () => {
     });
 
     it('should return 400 error if save fails', async () => {        
-        Category.schema = { path: () => ({ enumValues: enumLanguage }) };
         const categoryToUpdate = { ...mockCategory, save: jest.fn().mockRejectedValue(new Error('Save failed')) };
         Category.findById.mockResolvedValue(categoryToUpdate);
         const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Category Name' });

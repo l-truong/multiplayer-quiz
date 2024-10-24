@@ -165,20 +165,23 @@ router.post('/', async (req, res) => {
 });
 
 // Create a list of questions
+//todo
 router.post('/bulk', async (req, res) => {
     const questions = req.body.questions;
 
-    if (!Array.isArray(questions)) {
+    // Check if the request body is a non-empty array
+    if (!Array.isArray(questions)  || questions.length === 0) {
         return res.status(400).json({
-            message: 'Questions must be an array'
+            message: 'Questions must be a non-empty array'
         });
     }
 
     const errors = [];
     const createdQuestions = [];
 
-    const session = await Question.startSession(); // Start a session for the transaction
-    session.startTransaction(); // Start the transaction
+    // Start a session for the transaction
+    const session = await Question.startSession(); 
+    session.startTransaction();
 
     try {
         for (const questionData of questions) {
@@ -209,7 +212,6 @@ router.post('/bulk', async (req, res) => {
                         options: questionData.options
                     }
                 });
-                continue;
             }
 
             const hasInvalidOptions = questionData.options.some(option => option === null || option === '');
@@ -258,7 +260,6 @@ router.post('/bulk', async (req, res) => {
                 continue;
             }
 
-            // Check if categoryId exists
             const categoryExists = await Category.findById(questionData.categoryId).session(session);
             if (!categoryExists) {
                 errors.push({

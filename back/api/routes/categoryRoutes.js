@@ -69,17 +69,18 @@ router.post('/', async (req, res) => {
         invalidParams.language = req.body.language;
     }
 
-    // If there are invalid parameters, return an error response
     if (Object.keys(invalidParams).length > 0) {
         return res.status(400).json({
             message: 'Parameters must be strings',
             invalidParams
         });
     }
+    
+    // Check if there is invalid language parameter
     if (!Category.schema.path('language').enumValues.includes(req.body.language)) {
         return res.status(400).json({
-            message: 'Language must be part of ',
-            acceptedLanguage: Category.schema.path('language').enumValues
+            message: 'Language must be part of [' + Category.schema.path('language').enumValues + ']',
+            invalidParams:  req.body.language
         });
     }
 
@@ -98,8 +99,103 @@ router.post('/', async (req, res) => {
 
 // Create a list of categories
 router.post('/bulk', async (req, res) => {
-    //todo
-})
+    const categories = req.body.categories;
+
+    // Check if the request body is a non-empty array
+    if (!Array.isArray(categories) || categories.length === 0) {
+        return res.status(400).json({
+            message: 'Category must be a non-empty array'
+        });
+    }
+    
+    const errors = [];
+    const createdCategories = [];
+    
+    // Start a session for the transaction
+    const session = await Category.startSession(); 
+    session.startTransaction();
+
+    try {
+        for (const categoryData of categories) {
+            // Validation logic (same as before)
+
+            // Check for missing parameters
+            const missingParams = [];
+            const requiredParams = ['name', 'description', 'language'];
+
+            requiredParams.forEach(param => {
+                if (categoryData[param] === undefined) {
+                    missingParams.push(param);
+                }
+            });
+
+            if (missingParams.length > 0) {
+                errors.push({
+                    category: categoryData,
+                    error: 'Missing parameters',
+                    missing: missingParams
+                });
+
+                if (missingParams.includes('language')) {
+                    continue;
+                }
+            }
+
+            // Check if parameters are strings and valid
+            const invalidParams = {};
+            if (typeof categoryData.name !== 'string') {
+                invalidParams.name = categoryData.name;
+            }
+            if (typeof categoryData.description !== 'string') {
+                invalidParams.description = categoryData.description;
+            }
+            if (typeof categoryData.language !== 'string') {
+                invalidParams.language = categoryData.language;
+            }
+
+            if (Object.keys(invalidParams).length > 0) {
+                errors.push({
+                    category: categoryData,
+                    error: 'Parameters must be strings',
+                    invalidParams
+                });
+
+                // Check if there is invalid language parameter
+                if (!Category.schema.path('language').enumValues.includes(categoryData.language)) {
+                    errors.push({
+                        category: categoryData,
+                        error: 'Language must be part of [' + Category.schema.path('language').enumValues + "]",                    
+                        invalidParams:  categoryData.language
+                    });          
+                }                      
+                continue;
+            }     
+
+            const category = new Category({
+                name: categoryData.name,
+                description: categoryData.description,
+                language: categoryData.language
+            });
+
+            const newCategory = await category.save({ session });
+            createdCategories.push(newCategory);
+        }
+
+        if (errors.length > 0) {
+            await session.abortTransaction(); // Rollback if there are errors
+            return res.status(400).json({ message: 'Some categories could not be processed', length: errors.length, errors: errors });
+        }
+
+        await session.commitTransaction(); // Commit if all went well
+        res.status(201).json({ message: 'Categories created successfully', categories: createdCategories });
+
+    } catch (err) {
+        await session.abortTransaction(); // Rollback on error
+        res.status(500).json({ message: 'An error occurred', error: err.message });
+    } finally {
+        session.endSession(); // End the session
+    }
+});
 
 // Create a list of categories from csv
 router.post('/csv', async (req, res) => {
@@ -148,8 +244,8 @@ router.patch('/:id', async (req, res, next) => {
     }    
     if (req.body.language !== undefined && !Category.schema.path('language').enumValues.includes(req.body.language)) {
         return res.status(400).json({
-            message: 'Language must be part of ',
-            acceptedLanguage: Category.schema.path('language').enumValues
+            message: 'Language must be part of [' + Category.schema.path('language').enumValues + "]",
+            invalidParams:  req.body.language
         });
     }
 
