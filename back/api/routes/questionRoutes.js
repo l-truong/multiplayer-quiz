@@ -1,5 +1,7 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
+const upload = multer();
 const Question = require('../models/question');
 const Category = require('../models/category');
 
@@ -165,8 +167,9 @@ router.post('/', async (req, res) => {
 });
 
 // Create a list of questions
-//todo
-router.post('/bulk', async (req, res) => {
+router.post('/bulk', async (req, res) => {    
+    //todo
+    
     const questions = req.body.questions;
 
     // Check if the request body is a non-empty array
@@ -301,7 +304,7 @@ router.post('/bulk', async (req, res) => {
 });
 
 // Create a list of questions from csv
-router.post('/csv', async (req, res) => {
+router.post('/csv', upload.single('questions'), async (req, res) => {
     // todo
 })
 
@@ -470,6 +473,11 @@ router.patch('/:id', async (req, res, next) => {
 /********/
 /* DELETE */
 /********/
+
+// Delete all questions
+router.delete('/all', async (req, res) => {       
+    // todo
+});
 
 // Delete question
 router.delete('/:id', async (req, res, next) => {

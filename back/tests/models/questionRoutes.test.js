@@ -187,7 +187,7 @@ describe('POST /questions', () => {
         expect(resOnlyCategoryId.body.message).toBe('Missing parameters');
         expect(resOnlyCategoryId.body.missing).toEqual(['questionText', 'options', 'correctAnswer']);
     
-        const resMissingAll = await request(app).post('/questions').send();
+        const resMissingAll = await request(app).post('/questions').send({});
         expect(resMissingAll.status).toBe(400);
         expect(resMissingAll.body.message).toBe('Missing parameters');
         expect(resMissingAll.body.missing).toEqual(['questionText', 'options', 'correctAnswer', 'categoryId']);
