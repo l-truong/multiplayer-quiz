@@ -1,25 +1,35 @@
-# Folders
-/images/
-back/node_modules/
+# Ignore tools directory
+tools/
+
+# Ignore node_modules in the backend
+/back/node_modules/
+
+# Ignore old API files
+/back/apiOld/
+
+# Ignore coverage reports from testing
+/back/coverage/
+
+# Ignore node_modules in the frontend
 /front/node_modules/
 
-# Build output
+# Ignore built assets from the frontend
 /front/dist/
-/front/build/
+.front/build/
 
-# Logs
+# Ignore log files
 /logs
 *.log
 npm-debug.log*
 
-# Environment variables
+# Ignore sensitive configuration file
 /back/config.json
 
-# IDE-specific files
+# Ignore IDE configuration files
 /.vscode/
 .VSCodeCounter
 
-# Docker files
+# Ignore Docker-related files (commented out for now)
 #/back/.dockerignore
 #/back/Dockerfile
 #/back/docker-compose.yml

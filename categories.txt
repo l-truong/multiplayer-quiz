@@ -1,4 +1,0 @@
-name;description;language
-category1;;jap
-category2;description 2;eng
-category 3;description 3;spa
