@@ -277,26 +277,6 @@ router.post('/csv', upload.single('categories'), async (req, res) => {
                         category: categoryData
                     });                   
                 }
-
-                // Check if parameters are strings and valid
-                const invalidParams = {};
-                if (!missingParams.includes("name") && typeof categoryData.name !== 'string') {
-                    invalidParams.name = categoryData.name;
-                }
-                if (!missingParams.includes("description") && typeof categoryData.description !== 'string') {
-                    invalidParams.description = categoryData.description;
-                }
-                if (!missingParams.includes("language") && typeof categoryData.language !== 'string') {
-                    invalidParams.language = categoryData.language;
-                }
-
-                if (Object.keys(invalidParams).length > 0) {
-                    errors.push({
-                        error: 'Parameters must be strings',
-                        category: categoryData,                    
-                        invalidParams           
-                    });                    
-                }      
                 
                 // Check if there is invalid language parameter
                 if (!missingParams.includes('language') && !Category.schema.path('language').enumValues.includes(categoryData.language)) {
@@ -348,9 +328,11 @@ router.post('/csv', upload.single('categories'), async (req, res) => {
         }
 
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to process CSV' });
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred',
+            error: 'Failed to process CSV'
+        });
     }
 });
 

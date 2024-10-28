@@ -9,39 +9,28 @@ app.use(express.json()); // Middleware for JSON parsing
 app.use('/categories', router); // Use category routes
 
 const enumLanguage = ['eng', 'fr'];
-let mockCategories;
-let mockCategory;
-let session;
-
-const initializeMocks = () => {
-    mockCategories = [{
-        _id: '6702a8418357fa576c95ea44',
-        categoryId: '6702a8418357fa576c95ea43',
-        name: 'Test Category name',
-        description: 'Test Category description',
-        language: 'eng',
-        createdAt: '2024-10-06T15:09:53.744Z',
-        updatedAt: '2024-10-06T15:09:53.744Z',
-        __v: 0
-    }];
-    mockCategory = mockCategories[0];
-    Category.find.mockResolvedValue(mockCategories);
-
-    // Set up the schema
-    Category.schema = { path: () => ({ enumValues: enumLanguage }) };
-
-    // Set up session
-    session = {
-        startTransaction: jest.fn(),
-        commitTransaction: jest.fn(),
-        abortTransaction: jest.fn(),
-        endSession: jest.fn(),
-    };
-    Category.startSession.mockResolvedValue(session);
+const mockCategories = [{
+    _id: '6702a8418357fa576c95ea44',
+    categoryId: '6702a8418357fa576c95ea43',
+    name: 'Test Category name',
+    description: 'Test Category description',
+    language: 'eng',
+    createdAt: '2024-10-06T15:09:53.744Z',
+    updatedAt: '2024-10-06T15:09:53.744Z',
+    __v: 0,
+}];
+const mockSession = {
+    startTransaction: jest.fn(),
+    commitTransaction: jest.fn(),
+    abortTransaction: jest.fn(),
+    endSession: jest.fn(),
 };
 
 beforeEach(() => {
-    initializeMocks();
+    // setup Mocks
+    Category.find.mockResolvedValue(mockCategories);
+    Category.schema = { path: () => ({ enumValues: enumLanguage }) };
+    Category.startSession.mockResolvedValue(mockSession);
 });
 
 afterEach(() => {
@@ -56,10 +45,9 @@ afterEach(() => {
 // GET /categories
 describe('GET /categories', () => {
     it('should return all categories', async () => {
-        Category.find.mockResolvedValue(mockCategories);
         const res = await request(app).get('/categories');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual([mockCategory]);
+        expect(res.body).toEqual(mockCategories);
     });
 
     it('should return 500 error on server failure', async () => {
@@ -75,7 +63,7 @@ describe('GET /categories', () => {
 describe('GET /categories/:id', () => {
     it('should return 404 error if category not found', async () => {
         Category.findById.mockResolvedValue(null);
-        const res = await request(app).get(`/categories/${mockCategory._id}`);
+        const res = await request(app).get(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -83,17 +71,17 @@ describe('GET /categories/:id', () => {
 
     it('should return 500 error if findById fails', async () => {
         Category.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).get(`/categories/${mockCategory._id}`);
+        const res = await request(app).get(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
     });
 
     it('should return a category by ID', async () => {
-        Category.findById.mockResolvedValue(mockCategory);
-        const res = await request(app).get(`/categories/${mockCategory._id}`);
+        Category.findById.mockResolvedValue(mockCategories[0]);
+        const res = await request(app).get(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(200);
-        expect(res.body).toEqual(mockCategory);
+        expect(res.body).toEqual(mockCategories[0]);
     });
 });
 
@@ -105,25 +93,33 @@ describe('GET /categories/:id', () => {
 // POST /categories
 describe('POST /categories', () => {
     it('should return 400 error if missing parameters', async () => {
-        const resOnlyName = await request(app).post('/categories').send({ name: 'Only Name' });
+        const newOnlyName  = { name: 'Only Name' };
+        Category.prototype.save.mockResolvedValue(newOnlyName);
+        const resOnlyName = await request(app).post('/categories').send(newOnlyName);
         expect(resOnlyName.status).toBe(400);
         expect(resOnlyName.body.message).toBe('An error occurred');
         expect(resOnlyName.body.error).toBe('Missing parameters');
         expect(resOnlyName.body.missing).toEqual(['description', 'language']);
 
-        const resOnlyDescription = await request(app).post('/categories').send({ description: 'Only Description' });
+        const newOnlyDescription  = { description: 'Only Description' };
+        Category.prototype.save.mockResolvedValue(newOnlyDescription);
+        const resOnlyDescription = await request(app).post('/categories').send(newOnlyDescription);
         expect(resOnlyDescription.status).toBe(400);
         expect(resOnlyDescription.body.message).toBe('An error occurred');
         expect(resOnlyDescription.body.error).toBe('Missing parameters');
         expect(resOnlyDescription.body.missing).toEqual(['name', 'language']);
 
-        const resOnlyLanguage = await request(app).post('/categories').send({ language: 'Only Language' });
+        const newOnlyLanguage  = { language: 'Only Language' };
+        Category.prototype.save.mockResolvedValue(newOnlyLanguage);
+        const resOnlyLanguage = await request(app).post('/categories').send(newOnlyLanguage);
         expect(resOnlyLanguage.status).toBe(400);
         expect(resOnlyLanguage.body.message).toBe('An error occurred');
         expect(resOnlyLanguage.body.error).toBe('Missing parameters');
         expect(resOnlyLanguage.body.missing).toEqual(['name', 'description']);
 
-        const resMissingAllParameters = await request(app).post('/categories').send({});
+        const newMissingAllParameters  = {};
+        Category.prototype.save.mockResolvedValue(newMissingAllParameters);
+        const resMissingAllParameters = await request(app).post('/categories').send(newMissingAllParameters);
         expect(resMissingAllParameters.status).toBe(400);
         expect(resMissingAllParameters.body.message).toBe('An error occurred');
         expect(resMissingAllParameters.body.error).toBe('Missing parameters');
@@ -131,25 +127,33 @@ describe('POST /categories', () => {
     });
 
     it('should return 400 error if parameters not string', async () => {
-        const resNameNotString = await request(app).post('/categories').send({ name: 0, description: 'New Description', language: 'eng' });
+        const newNameNotString  = { name: 0, description: 'New Description', language: 'eng' };
+        Category.prototype.save.mockResolvedValue(newNameNotString);
+        const resNameNotString = await request(app).post('/categories').send(newNameNotString);
         expect(resNameNotString.status).toBe(400);
         expect(resNameNotString.body.message).toBe('An error occurred');
         expect(resNameNotString.body.error).toBe('Parameters must be strings');
         expect(resNameNotString.body.invalidParams).toEqual({ name : 0 });
 
-        const resDescriptionNotString = await request(app).post('/categories').send({ name: 'New Name', description: 1, language: 'eng' });
+        const newDescriptionNotString  = { name: 'New Name', description: 1, language: 'eng' };
+        Category.prototype.save.mockResolvedValue(newDescriptionNotString);
+        const resDescriptionNotString = await request(app).post('/categories').send(newDescriptionNotString);
         expect(resDescriptionNotString.status).toBe(400);
         expect(resDescriptionNotString.body.message).toBe('An error occurred');
         expect(resDescriptionNotString.body.error).toBe('Parameters must be strings');
         expect(resDescriptionNotString.body.invalidParams).toEqual({ description : 1 });
 
-        const resLanguageNotString = await request(app).post('/categories').send({ name: 'New Name', description: 'New Description', language: 2 });
+        const newLanguageNotString  = { name: 'New Name', description: 'New Description', language: 2 };
+        Category.prototype.save.mockResolvedValue(newLanguageNotString);
+        const resLanguageNotString = await request(app).post('/categories').send(newLanguageNotString);
         expect(resLanguageNotString.status).toBe(400);
         expect(resLanguageNotString.body.message).toBe('An error occurred');
         expect(resLanguageNotString.body.error).toBe('Parameters must be strings');
         expect(resLanguageNotString.body.invalidParams).toEqual({ language : 2 });
 
-        const resAllParametersNotString = await request(app).post('/categories').send({ name: 0, description: 1, language: 2 });
+        const newCategoryAllParametersNotString = { name: 0, description: 1, language: 2 };
+        Category.prototype.save.mockResolvedValue(newCategoryAllParametersNotString);        
+        const resAllParametersNotString = await request(app).post('/categories').send(newCategoryAllParametersNotString);
         expect(resAllParametersNotString.status).toBe(400);
         expect(resAllParametersNotString.body.message).toBe('An error occurred');
         expect(resAllParametersNotString.body.error).toBe('Parameters must be strings');
@@ -157,7 +161,9 @@ describe('POST /categories', () => {
     });
 
     it('should return 400 error if parameter language incorrect', async () => {
-        const res = await request(app).post('/categories').send({ name: 'New Category', description: 'New Description', language: 'Not a language' });
+        const newCategory = { name: 'New Category', description: 'New Description', language: 'Not a language' };
+        Category.prototype.save.mockResolvedValue(newCategory);
+        const res = await request(app).post('/categories').send(newCategory);
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Language must be part of [' + enumLanguage + ']');
@@ -184,12 +190,16 @@ describe('POST /categories', () => {
 // POST /categories/bulk
 describe('POST /categories/bulk', () => {
     it('should return 400 error if missing categories parameter or empty', async () => {
-        const resMissing = await request(app).post('/categories/bulk').send({});
+        const newMissing = {};
+        Category.prototype.save.mockResolvedValue(newMissing);
+        const resMissing = await request(app).post('/categories/bulk').send(newMissing);
         expect(resMissing.status).toBe(400);
         expect(resMissing.body.message).toBe('An error occurred');
         expect(resMissing.body.error).toBe('Categories must be a non-empty array');
         
-        const resEmpty = await request(app).post('/categories/bulk').send({ 'categories': []});
+        const newEmpty = [];
+        Category.prototype.save.mockResolvedValue(newEmpty);
+        const resEmpty = await request(app).post('/categories/bulk').send({ 'categories': newEmpty});
         expect(resEmpty.status).toBe(400);
         expect(resEmpty.body.message).toBe('An error occurred');
         expect(resEmpty.body.error).toBe('Categories must be a non-empty array');
@@ -204,7 +214,7 @@ describe('POST /categories/bulk', () => {
             {}
         ];
         Category.prototype.save.mockResolvedValue(newCategories);
-
+        
         const res = await request(app).post('/categories/bulk').send({categories: newCategories});
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('Some categories could not be processed');
@@ -227,9 +237,9 @@ describe('POST /categories/bulk', () => {
         expect(res.body.errors[4].category).toMatchObject(newCategories[4]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
     });
 
     it('should return 400 error if parameters are not strings', async () => {
@@ -256,9 +266,9 @@ describe('POST /categories/bulk', () => {
         expect(res.body.errors[2].category).toMatchObject(newCategories[2]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
     });
 
     it('should return 400 error if language not part of ' + enumLanguage, async () => {
@@ -314,9 +324,9 @@ describe('POST /categories/bulk', () => {
         expect(res.body.errors[5].category).toEqual(newCategories[2]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
     });
 
     it('should create a new category successfully', async () => {
@@ -336,9 +346,9 @@ describe('POST /categories/bulk', () => {
         expect(res.body.categories[0][2]).toMatchObject(newCategories[2]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.commitTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.commitTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
       });
 
     it('should return 500 error if save fails', async () => {
@@ -355,9 +365,9 @@ describe('POST /categories/bulk', () => {
         expect(res.body.error).toBe('Validation error');
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
     });
 });
 
@@ -423,9 +433,9 @@ describe('POST /categories/csv', () => {
         expect(res.body.errors[4].category).toMatchObject(newCategories[4]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
     });
 
     it('should return 400 error if language not part of ' + enumLanguage, async () => {
@@ -475,9 +485,9 @@ describe('POST /categories/csv', () => {
         expect(res.body.errors[3].category).toMatchObject(newCategories[2]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
     });
 
     it('should create a new category successfully', async () => {
@@ -497,18 +507,18 @@ describe('POST /categories/csv', () => {
         expect(res.body.categories[0][2]).toMatchObject(newCategories[2]);
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.commitTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.commitTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
       });
 
     it('should return 500 error if save fails', async () => {
-        Category.prototype.save.mockRejectedValue(new Error('Validation error'));
         const newCategories = [
             { name: 'New Name 1', description: 'New Description 1', language: 'eng'},
             { name: 'New Name 2', description: 'New Description 2', language: 'eng'},
             { name: 'New Name 3', description: 'New Description 3', language: 'fr'}
-        ];
+        ];        
+        Category.prototype.save.mockRejectedValue(new Error('Validation error'));
     
         const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(newCategories), 'categories.csv');
         expect(res.status).toBe(500);
@@ -516,9 +526,16 @@ describe('POST /categories/csv', () => {
         expect(res.body.error).toBe('Validation error');
 
         expect(Category.startSession).toHaveBeenCalled();
-        expect(session.startTransaction).toHaveBeenCalled();
-        expect(session.abortTransaction).toHaveBeenCalled();
-        expect(session.endSession).toHaveBeenCalled();
+        expect(mockSession.startTransaction).toHaveBeenCalled();
+        expect(mockSession.abortTransaction).toHaveBeenCalled();
+        expect(mockSession.endSession).toHaveBeenCalled();
+    });
+
+    it('should return 500 and error message for failed CSV processing', async () => {
+        const res = await request(app).post('/categories/csv').attach('categories', null, 'categories.csv');
+        expect(res.status).toBe(500);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Failed to process CSV');
     });
 });
 
@@ -531,7 +548,7 @@ describe('POST /categories/csv', () => {
 describe('PATCH /categories/:id', () => {
     it('should return 404 if category not found', async () => {
         Category.findById.mockResolvedValue(null);
-        const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Name' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Name' });
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -539,35 +556,35 @@ describe('PATCH /categories/:id', () => {
 
     it('should return 500 error if findById fails', async () => {
         Category.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Name' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Name' });
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
     });
 
     it('should return 400 error if parameter name is not a string', async () => {
-        const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };
+        const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
 
-        const resNameNotString = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 0 });
+        const resNameNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 0 });
         expect(resNameNotString.status).toBe(400);
         expect(resNameNotString.body.message).toBe('An error occurred');
         expect(resNameNotString.body.error).toBe('Parameters must be strings');
         expect(resNameNotString.body.invalidParams).toEqual({ name: 0 });
 
-        const resDescriptionNotString = await request(app).patch(`/categories/${mockCategory._id}`).send({ description: 1 });
+        const resDescriptionNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ description: 1 });
         expect(resDescriptionNotString.status).toBe(400);
         expect(resDescriptionNotString.body.message).toBe('An error occurred');
         expect(resDescriptionNotString.body.error).toBe('Parameters must be strings');
         expect(resDescriptionNotString.body.invalidParams).toEqual({ description: 1 });
 
-        const resLanguageNotString = await request(app).patch(`/categories/${mockCategory._id}`).send({ language: 2 });
+        const resLanguageNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ language: 2 });
         expect(resLanguageNotString.status).toBe(400);
         expect(resLanguageNotString.body.message).toBe('An error occurred');
         expect(resLanguageNotString.body.error).toBe('Parameters must be strings');
         expect(resLanguageNotString.body.invalidParams).toEqual({ language: 2 });
 
-        const resAllParametersNotString = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 0, description: 1, language: 2 });
+        const resAllParametersNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 0, description: 1, language: 2 });
         expect(resAllParametersNotString.status).toBe(400);
         expect(resAllParametersNotString.body.message).toBe('An error occurred');
         expect(resAllParametersNotString.body.error).toBe('Parameters must be strings');
@@ -575,9 +592,9 @@ describe('PATCH /categories/:id', () => {
     }); 
 
     it('should return 400 res if parameter language incorrect', async () => {
-        const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };
+        const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ language: 'Not a language' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ language: 'Not a language' });
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Language must be part of [' + enumLanguage + ']');
@@ -585,25 +602,34 @@ describe('PATCH /categories/:id', () => {
     });
 
     it('should return 200 res if no fields were updated', async () => {
-        const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };
+        const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Test Category name', description: 'Test Category description', language: 'eng' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Test Category name', description: 'Test Category description', language: 'eng' });
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('No fields were updated');
     });
 
     it('should update a category', async () => {
-        const categoryToUpdate = { ...mockCategory, save: jest.fn().mockResolvedValue(mockCategory) };
-        Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Category name' });
+        const currentDate = new Date().toISOString(); 
+        const updatedCategory = { 
+            ...mockCategories[0], 
+            name: 'Updated Category name', 
+            updatedAt: currentDate,
+            save: jest.fn().mockResolvedValue({ ...mockCategories[0], name: 'Updated Category name', updatedAt: currentDate })
+        };
+        Category.findById.mockResolvedValue(updatedCategory);
+
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category name' });
         expect(res.status).toBe(200);
-        expect(categoryToUpdate.name).toBe('Updated Category name');
+        expect(res.body.name).toBe('Updated Category name');
+        expect(res.body.updatedAt).toBe(currentDate);
+        expect(updatedCategory.save).toHaveBeenCalled();
     });
 
     it('should return 400 error if save fails', async () => {
-        const categoryToUpdate = { ...mockCategory, save: jest.fn().mockRejectedValue(new Error('Save failed')) };
+        const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockRejectedValue(new Error('Save failed')) };
         Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategory._id}`).send({ name: 'Updated Category Name' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category Name' });
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Save failed');
@@ -619,7 +645,6 @@ describe('PATCH /categories/:id', () => {
 describe('DELETE /categories/all', () => {
     it('should delete all categories', async () => {
         Category.deleteMany.mockResolvedValue({ deletedCount: 2 });
-
         const res = await request(app).delete('/categories/all');
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('All categories deleted');
@@ -631,9 +656,7 @@ describe('DELETE /categories/all', () => {
 
     it('should return a 500 error if delete fails', async () => {
         Category.deleteMany.mockRejectedValue(new Error('Deletion failed'));
-
         const res = await request(app).delete('/categories/all');
-
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Deletion failed');
@@ -644,7 +667,7 @@ describe('DELETE /categories/all', () => {
 describe('DELETE /categories/:id', () => {
     it('should return 404 error if category not found', async () => {
         Category.findById.mockResolvedValue(null);
-        const res = await request(app).delete(`/categories/${mockCategory._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -652,33 +675,33 @@ describe('DELETE /categories/:id', () => {
 
     it('should return a 500 error if finding category fails', async () => {
         Category.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/categories/${mockCategory._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
     });
 
     it('should return 404 if category not found during delete', async () => {
-        Category.findById.mockResolvedValue(mockCategory);
+        Category.findById.mockResolvedValue(mockCategories[0]);
         Category.findByIdAndDelete.mockResolvedValue(null);
-        const res = await request(app).delete(`/categories/${mockCategory._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
     });
 
     it('should delete a category by ID', async () => {
-        Category.findById.mockResolvedValue(mockCategory);
-        Category.findByIdAndDelete.mockResolvedValue(mockCategory);
-        const res = await request(app).delete(`/categories/${mockCategory._id}`);
+        Category.findById.mockResolvedValue(mockCategories[0]);
+        Category.findByIdAndDelete.mockResolvedValue(mockCategories[0]);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('Category deleted');
     });
 
     it('should return a 500 error if delete fails', async () => {
-        Category.findById.mockResolvedValue(mockCategory);
+        Category.findById.mockResolvedValue(mockCategories[0]);
         Category.findByIdAndDelete.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/categories/${mockCategory._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');

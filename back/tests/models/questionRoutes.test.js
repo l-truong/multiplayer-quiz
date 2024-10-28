@@ -12,7 +12,7 @@ let mockQuestions;
 let mockQuestion;
 let session;
 
-beforeEach(() => {
+const initializeMocks = () => {
     mockQuestions = [ {
         _id: "6702afae2acce6212ee86085",
         questionId: "6702afae2acce6212ee86084",
@@ -78,7 +78,7 @@ beforeEach(() => {
         endSession: jest.fn(),
     };
     Question.startSession.mockResolvedValue(session);
-});
+};
 
 beforeEach(() => {
     initializeMocks();
@@ -96,7 +96,6 @@ afterEach(() => {
 // GET /questions
 describe('GET /questions', () => {
     it('should return all questions', async () => {
-        Category.find.mockResolvedValue(mockQuestions);
         const res = await request(app).get('/questions');
         expect(res.status).toBe(200);
         expect(res.body).toEqual(mockQuestions);

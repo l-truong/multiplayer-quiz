@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const flagSchema = require('./flag');
 
 const questionSchema = new mongoose.Schema({
     questionId: { 
@@ -27,7 +26,6 @@ const questionSchema = new mongoose.Schema({
         ref: 'Category', 
         required: true 
     },
-    flags: [ flagSchema ],
     createdAt: { 
         type: Date, 
         default: Date.now 
@@ -36,11 +34,6 @@ const questionSchema = new mongoose.Schema({
         type: Date, 
         default: Date.now 
     }
-});
-
-questionSchema.pre('save', function(next) {
-    this.updated_at = Date.now();
-    next();
 });
 
 module.exports = mongoose.model('Question', questionSchema);

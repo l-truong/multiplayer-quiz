@@ -8,7 +8,6 @@ const fs = require('fs');
 // Import route handlers
 const categoryRoutes = require('./api/routes/categoryRoutes');
 const questionRoutes = require('./api/routes/questionRoutes');
-const userRoutes = require('./api/routes/userRoutes');
 
 // Load configuration from a JSON file
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
@@ -52,7 +51,6 @@ app.use((req, res, next) => {
 // Define route handlers
 app.use('/categories', categoryRoutes);
 app.use('/questions', questionRoutes);
-app.use('/users', userRoutes);
 
 // 404 error handling middleware
 app.use((req, res, next) => {
