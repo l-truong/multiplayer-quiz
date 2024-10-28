@@ -69,6 +69,8 @@ router.get('/:id', async (req, res, next) => {
 // Create a new question
 router.post('/', async (req, res) => {
     // Check for missing parameters
+    //todo
+
     const missingParams = [];
     const requiredParams = ['questionText', 'options', 'correctAnswer', 'categoryId'];   
 
@@ -468,6 +470,12 @@ router.patch('/:id', async (req, res, next) => {
         res.status(400).json({ message: err.message });
     }
 });
+
+
+// Change toutes les id d'une categorie à une autre
+router.patch('/categories', async (req, res, next) => {
+    // todo
+})
 
 
 /********/

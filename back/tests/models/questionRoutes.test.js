@@ -8,8 +8,10 @@ const app = express();
 app.use(express.json()); // Middleware for JSON parsing
 app.use('/questions', router); // Use question routes
 
-let mockQuestions; // Mock questions list object
+let mockQuestions;
 let mockQuestion;
+let session;
+
 beforeEach(() => {
     mockQuestions = [ {
         _id: "6702afae2acce6212ee86085",
@@ -65,14 +67,27 @@ beforeEach(() => {
         updatedAt: "2024-10-06T15:41:12.558Z",
         __v: 0
     }];   
+    mockQuestion = mockQuestions[0];
     Question.find.mockResolvedValue(mockQuestions);
 
-    mockQuestion = mockQuestions[0];
+    // Set up session
+    session = {
+        startTransaction: jest.fn(),
+        commitTransaction: jest.fn(),
+        abortTransaction: jest.fn(),
+        endSession: jest.fn(),
+    };
+    Question.startSession.mockResolvedValue(session);
+});
+
+beforeEach(() => {
+    initializeMocks();
 });
 
 afterEach(() => {
     jest.clearAllMocks(); // Clear mocks after each test
 });
+
 
 /********/
 /* GET */
@@ -81,6 +96,7 @@ afterEach(() => {
 // GET /questions
 describe('GET /questions', () => {
     it('should return all questions', async () => {
+        Category.find.mockResolvedValue(mockQuestions);
         const res = await request(app).get('/questions');
         expect(res.status).toBe(200);
         expect(res.body).toEqual(mockQuestions);
@@ -212,15 +228,20 @@ describe('POST /questions/bulk', () => {
     //todo    
 });
 
+
 /********/
 /* UPDATE */
 /********/
 
-// PATCH /categories/:id
+// PATCH /questions/:id
 describe('PATCH /questions/:id', () => {
     //todo
 });
 
+// PATCH /questions/categories
+describe('PATCH /questions/categories', () => {
+    //todo
+});
 
 /********/
 /* DELETE */
