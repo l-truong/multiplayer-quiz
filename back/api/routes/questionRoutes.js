@@ -127,6 +127,18 @@ router.post('/', async (req, res) => {
         });
     }
 
+    // Check for unique options
+    const uniqueOptions = new Set(req.body.options);
+    if (uniqueOptions.size !== req.body.options.length) {
+        return res.status(400).json({
+            message: 'An error occurred',
+            error: 'Options must be unique',
+            invalidParams: {
+                options: req.body.options
+            }
+        });
+    }
+
     // Check if correctAnswer parameter is included in options parameter
     if (!req.body.options.includes(req.body.correctAnswer)) {
         return res.status(400).json({
@@ -164,7 +176,7 @@ router.post('/', async (req, res) => {
     
     try {
         // Check if categoryId parameters exists in the Category collection
-        const categoryExists = await Category.findById(req.body.categoryId);
+        const categoryExists = await Category.findOne({ categoryId: req.body.categoryId });
         if (!categoryExists) {
             return res.status(400).json({
                 message: 'An error occurred',
@@ -254,6 +266,19 @@ router.post('/bulk', async (req, res) => {
                 }
             }
 
+            if(!missingParams.includes("options")) {
+                const uniqueOptions = new Set(questionData.options);
+                if (uniqueOptions.size !== questionData.options.length) {
+                    errors.push({     
+                        message: 'An error occurred',
+                        error: 'Options must be unique',
+                        invalidParams: {
+                            options: questionData.options
+                        }
+                    });
+                }
+            }
+
             if (!missingParams.includes("options") && !questionData.options.includes(questionData.correctAnswer)) {
                 errors.push({                    
                     error: 'Correct answer must be one of the options',
@@ -287,7 +312,7 @@ router.post('/bulk', async (req, res) => {
             }
 
             if (!missingParams.includes("categoryId")) {
-                const categoryExists = await Category.findById(questionData.categoryId).session(session);
+                const categoryExists = await Category.findOne({ categoryId: questionData.categoryId }).session(session);                
                 if (!categoryExists) {
                     errors.push({
                         question: questionData,
@@ -366,13 +391,14 @@ router.patch('/:id', async (req, res, next) => {
             error: err.message 
         });
     }
+    console.log(question)
     res.question = question;
     next();
 }, async (req, res) => {
     let updated = false;
 
     // Check options parameter if provided
-    if (req.body.options !== undefined) {
+    if (req.body.options !== undefined && req.body.options !== null) {
         // Check if options parameters is an array and has exactly 4 elements
         if (!Array.isArray(req.body.options) || req.body.options.length !== 4) {
             return res.status(400).json({
@@ -418,14 +444,14 @@ router.patch('/:id', async (req, res, next) => {
     const invalidParams = {};
 
     // Check categoryId parameter if provided
-    if (req.body.categoryId !== undefined) {
+    if (req.body.categoryId !== undefined && req.body.categoryId !== null && req.body.categoryId !== '' && typeof req.body.categoryId !== 'string') {
         if (typeof req.body.categoryId !== 'string') {
             invalidParams.categoryId = req.body.categoryId;
         }
         else {
             // Check if categoryId parameter exists
             try {
-                const categoryExists = await Category.findById(req.body.categoryId);
+                const categoryExists = await Category.findOne({ categoryId: req.body.categoryId });                            
                 if (!categoryExists) {
                     return res.status(400).json({
                         message: 'An error occurred',
@@ -450,14 +476,14 @@ router.patch('/:id', async (req, res, next) => {
         }        
     }
     
-    // Check if rest of parameters are strings
-    if (req.body.questionText !== undefined && typeof req.body.questionText !== 'string') {
+    // Check if rest of parameters are strings    
+    if (req.body.questionText !== undefined && req.body.questionText !== null && req.body.questionText !== '' && typeof req.body.questionText !== 'string') {
         invalidParams.questionText = req.body.questionText;
     }
-    if (req.body.correctAnswer !== undefined && typeof req.body.correctAnswer !== 'string') {
+    if (req.body.correctAnswer !== undefined && req.body.correctAnswer !== null && req.body.correctAnswer !== '' && typeof req.body.correctAnswer !== 'string') {
         invalidParams.correctAnswer = req.body.correctAnswer;
     }
-    if (req.body.explanation !== undefined && typeof req.body.explanation !== 'string') {
+    if (req.body.explanation !== undefined && req.body.explanation !== null && req.body.explanation !== '' && typeof req.body.explanation !== 'string') {
         invalidParams.explanation = req.body.explanation;
     }
 
@@ -493,6 +519,8 @@ router.patch('/:id', async (req, res, next) => {
     // Update the updatedAt field to the current time
     res.question.updatedAt = new Date();
 
+    console.log(req.body)
+    console.log(res.question)
     try {
         const updatedQuestion = await res.question.save();
         res.json(updatedQuestion);

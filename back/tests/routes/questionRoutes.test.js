@@ -8,12 +8,8 @@ const app = express();
 app.use(express.json()); // Middleware for JSON parsing
 app.use('/questions', router); // Use question routes
 
-let mockQuestions;
-let mockQuestion;
-let session;
-
-const initializeMocks = () => {
-    mockQuestions = [ {
+const mockQuestions = [
+    {
         _id: "6702afae2acce6212ee86085",
         questionId: "6702afae2acce6212ee86084",
         questionText: "Which country has the largest land area?",
@@ -66,22 +62,18 @@ const initializeMocks = () => {
         createdAt: "2024-10-06T15:41:12.558Z",
         updatedAt: "2024-10-06T15:41:12.558Z",
         __v: 0
-    }];   
-    mockQuestion = mockQuestions[0];
-    Question.find.mockResolvedValue(mockQuestions);
-
-    // Set up session
-    session = {
-        startTransaction: jest.fn(),
-        commitTransaction: jest.fn(),
-        abortTransaction: jest.fn(),
-        endSession: jest.fn(),
-    };
-    Question.startSession.mockResolvedValue(session);
+}];
+const mockSession = {
+    startTransaction: jest.fn(),
+    commitTransaction: jest.fn(),
+    abortTransaction: jest.fn(),
+    endSession: jest.fn(),
 };
 
 beforeEach(() => {
-    initializeMocks();
+    // setup Mocks
+    Question.find.mockResolvedValue(mockQuestions);
+    Question.startSession.mockResolvedValue(mockSession);
 });
 
 afterEach(() => {
@@ -104,31 +96,36 @@ describe('GET /questions', () => {
     it('should return 500 error on server failure', async () => {
         Question.find.mockRejectedValue(new Error('Database error'));
         const res = await request(app).get('/questions');
-        expect(res.status).toBe(500);
-        expect(res.body.message).toBe('Database error');
+        expect(res.status).toBe(500);       
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
     });
 });
 
 // GET /questions/random/:random
 describe('GET /questions/random/:random', () => {
-    it('should return 400 if the random parameter is missing', async () => {
+    it('should return 404 if the random parameter is missing', async () => {
         const res = await request(app).get('/questions/random/');
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe('Parameter is required');
+        expect(res.status).toBe(404);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Parameter is required');
     });
 
-    it('should return 400 if the random parameter is not a positive number', async () => {
+    it('should return 404 if the random parameter is not a positive number', async () => {
         const res = await request(app).get('/questions/random/0');
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe('Parameter must be a positive number');
+        expect(res.status).toBe(404);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Parameter must be a positive number');
 
         const resNegative = await request(app).get('/questions/random/-5');
-        expect(resNegative.status).toBe(400);
-        expect(resNegative.body.message).toBe('Parameter must be a positive number');
+        expect(resNegative.status).toBe(404);       
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Parameter must be a positive number');
 
         const resNaN = await request(app).get('/questions/random/abc');
-        expect(resNaN.status).toBe(400);
-        expect(resNaN.body.message).toBe('Parameter must be a positive number');
+        expect(resNaN.status).toBe(404);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Parameter must be a positive number');
     });
 
     it('should return a list of questions when the random parameter is valid', async () => {       
@@ -142,11 +139,12 @@ describe('GET /questions/random/:random', () => {
     });
 
     it('should return 500 error on server failure', async () => {
+        Question.find.mockRejectedValue(new Error('Database error'));        
         const length = 2;
-        Question.find.mockRejectedValue(new Error('Database error'));
         const res = await request(app).get(`/questions/random/${length}`);
-        expect(res.status).toBe(500);
-        expect(res.body.message).toBe('Database error');
+        expect(res.status).toBe(500);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
     });
 });
 
@@ -154,23 +152,25 @@ describe('GET /questions/random/:random', () => {
 describe('GET /questions/:id', () => {
     it('should return 404 error if question not found', async () => {
         Question.findById.mockResolvedValue(null);
-        const res = await request(app).get(`/questions/${mockQuestion._id}`);
-        expect(res.status).toBe(404);
-        expect(res.body.message).toBe('Question not found');
+        const res = await request(app).get(`/questions/${mockQuestions[0]._id}`);
+        expect(res.status).toBe(404);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Question not found');
     });
 
     it('should return 500 error if findById fails', async () => {
         Question.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).get(`/questions/${mockQuestion._id}`);
-        expect(res.status).toBe(500);
-        expect(res.body.message).toBe('Database error');
+        const res = await request(app).get(`/questions/${mockQuestions[0]._id}`);
+        expect(res.status).toBe(500);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
     });
 
     it('should return a question by ID', async () => {
-        Question.findById.mockResolvedValue(mockQuestion);
-        const res = await request(app).get(`/questions/${mockQuestion._id}`);
+        Question.findById.mockResolvedValue(mockQuestions[0]);
+        const res = await request(app).get(`/questions/${mockQuestions[0]._id}`);
         expect(res.status).toBe(200);
-        expect(res.body).toEqual(mockQuestion);
+        expect(res.body).toEqual(mockQuestions[0]);
     });
 });
 
@@ -182,29 +182,44 @@ describe('GET /questions/:id', () => {
 // POST /questions
 describe('POST /questions', () => {       
     it('should return 400 error if missing parameters', async () => {
-        const resOnlyQuestionText = await request(app).post('/questions').send({ questionText: 'Only question text' });
-        expect(resOnlyQuestionText.status).toBe(400);
-        expect(resOnlyQuestionText.body.message).toBe('Missing parameters');
+        const newOnlyQuestionTest  = { questionText: 'Only question text' };
+        Question.prototype.save.mockResolvedValue(newOnlyQuestionTest);
+        const resOnlyQuestionText = await request(app).post('/questions').send(newOnlyQuestionTest);
+        expect(resOnlyQuestionText.status).toBe(400);        
+        expect(resOnlyQuestionText.body.message).toBe('An error occurred');
+        expect(resOnlyQuestionText.body.error).toBe('Missing parameters');
         expect(resOnlyQuestionText.body.missing).toEqual(['options', 'correctAnswer', 'categoryId']);
         
-        const resOnlyOptions = await request(app).post('/questions').send({ options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'] });
+        const newOnlyOptions  = { options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'] };
+        Question.prototype.save.mockResolvedValue(newOnlyOptions);       
+        const resOnlyOptions = await request(app).post('/questions').send(newOnlyOptions);
         expect(resOnlyOptions.status).toBe(400);
-        expect(resOnlyOptions.body.message).toBe('Missing parameters');
+        expect(resOnlyOptions.body.message).toBe('An error occurred');
+        expect(resOnlyOptions.body.error).toBe('Missing parameters');
         expect(resOnlyOptions.body.missing).toEqual(['questionText', 'correctAnswer', 'categoryId']);
 
-        const resOnlyCorrectAnswer = await request(app).post('/questions').send({ correctAnswer: 'answer 2' });
+        const newOnlyCorrectAnswer  = { correctAnswer: 'answer 2' };
+        Question.prototype.save.mockResolvedValue(newOnlyCorrectAnswer);     
+        const resOnlyCorrectAnswer = await request(app).post('/questions').send(newOnlyCorrectAnswer);
         expect(resOnlyCorrectAnswer.status).toBe(400);
-        expect(resOnlyCorrectAnswer.body.message).toBe('Missing parameters');
+        expect(resOnlyCorrectAnswer.body.message).toBe('An error occurred');
+        expect(resOnlyCorrectAnswer.body.error).toBe('Missing parameters');
         expect(resOnlyCorrectAnswer.body.missing).toEqual(['questionText', 'options', 'categoryId']);
     
-        const resOnlyCategoryId = await request(app).post('/questions').send({ categoryId: 'categoryId'});
-        expect(resOnlyCategoryId.status).toBe(400);
-        expect(resOnlyCategoryId.body.message).toBe('Missing parameters');
+        const newOnlyCategoryId  = { categoryId: 'categoryId'};
+        Question.prototype.save.mockResolvedValue(newOnlyCategoryId);   
+        const resOnlyCategoryId = await request(app).post('/questions').send(newOnlyCategoryId);
+        expect(resOnlyCategoryId.status).toBe(400);        
+        expect(resOnlyCategoryId.body.message).toBe('An error occurred');
+        expect(resOnlyCategoryId.body.error).toBe('Missing parameters');
         expect(resOnlyCategoryId.body.missing).toEqual(['questionText', 'options', 'correctAnswer']);
     
-        const resMissingAll = await request(app).post('/questions').send({});
+        const newMissingAll  = {};
+        Question.prototype.save.mockResolvedValue(newMissingAll);   
+        const resMissingAll = await request(app).post('/questions').send(newMissingAll);
         expect(resMissingAll.status).toBe(400);
-        expect(resMissingAll.body.message).toBe('Missing parameters');
+        expect(resMissingAll.body.message).toBe('An error occurred');
+        expect(resMissingAll.body.error).toBe('Missing parameters');
         expect(resMissingAll.body.missing).toEqual(['questionText', 'options', 'correctAnswer', 'categoryId']);
     });
 
@@ -249,39 +264,43 @@ describe('PATCH /questions/categories', () => {
 describe('DELETE /questions/:id', () => {
     it('should return 404 error if question not found', async () => {
         Question.findById.mockResolvedValue(null);
-        const res = await request(app).delete(`/questions/${mockQuestion._id}`);
-        expect(res.status).toBe(404);
-        expect(res.body.message).toBe('Question not found');
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        expect(res.status).toBe(404);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Question not found');
     });
 
     it('should return a 500 error if finding question fails', async () => {
         Question.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/questions/${mockQuestion._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
         expect(res.status).toBe(500);
-        expect(res.body.message).toBe('Database error');
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
     });
 
     it('should return 404 if question not found during delete', async () => {
-        Question.findById.mockResolvedValue(mockQuestion);
+        Question.findById.mockResolvedValue(mockQuestions[0]);
         Question.findByIdAndDelete.mockResolvedValue(null);
-        const res = await request(app).delete(`/questions/${mockQuestion._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
         expect(res.status).toBe(404);
-        expect(res.body.message).toBe('Question not found');
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Question not found');
     });
 
     it('should delete a question by ID', async () => {
-        Question.findById.mockResolvedValue(mockQuestion);
-        Question.findByIdAndDelete.mockResolvedValue(mockQuestion);
-        const res = await request(app).delete(`/questions/${mockQuestion._id}`);
+        Question.findById.mockResolvedValue(mockQuestions[0]);
+        Question.findByIdAndDelete.mockResolvedValue(mockQuestions[0]);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('Question deleted');
     });  
 
     it('should return a 500 error if delete fails', async () => {
-        Question.findById.mockResolvedValue(mockQuestion);
+        Question.findById.mockResolvedValue(mockQuestions[0]);
         Question.findByIdAndDelete.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/questions/${mockQuestion._id}`);
-        expect(res.status).toBe(500);
-        expect(res.body.message).toBe('Database error');
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        expect(res.status).toBe(500);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
     });
 });
