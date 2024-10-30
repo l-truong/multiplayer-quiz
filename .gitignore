@@ -1,5 +1,5 @@
 # Ignore tools directory
-tools/
+#tools/
 
 # Ignore node_modules in the backend
 /back/node_modules/
