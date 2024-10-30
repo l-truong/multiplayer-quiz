@@ -610,24 +610,54 @@ describe('PATCH /categories/:id', () => {
     });
 
     it('should update a category', async () => {
-        const currentDate = new Date().toISOString(); 
-        const updatedCategory = { 
+        const updatedCategoryName = { 
             ...mockCategories[0], 
-            name: 'Updated Category name', 
-            updatedAt: currentDate,
-            save: jest.fn().mockResolvedValue({ ...mockCategories[0], name: 'Updated Category name', updatedAt: currentDate })
+            save: jest.fn().mockResolvedValue({ ...mockCategories[0], name: 'Updated Category name'})
         };
-        Category.findById.mockResolvedValue(updatedCategory);
+        Category.findById.mockResolvedValue(updatedCategoryName);
+        const resUpdateName = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category name' });
+        expect(resUpdateName.status).toBe(200);
+        expect(resUpdateName.body.name).toBe('Updated Category name');
+        expect(updatedCategoryName.save).toHaveBeenCalled();
 
-        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category name' });
-        expect(res.status).toBe(200);
-        expect(res.body.name).toBe('Updated Category name');
-        expect(res.body.updatedAt).toBe(currentDate);
-        expect(updatedCategory.save).toHaveBeenCalled();
+        const updatedCategoryDescription = { 
+            ...mockCategories[0], 
+            save: jest.fn().mockResolvedValue({ ...mockCategories[0], description: 'Updated Category description'})
+        };
+        Category.findById.mockResolvedValue(updatedCategoryDescription);
+        const resUpdateDescription = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ description: 'Updated Category description' });
+        expect(resUpdateDescription.status).toBe(200);
+        expect(resUpdateDescription.body.description).toBe('Updated Category description');
+        expect(updatedCategoryDescription.save).toHaveBeenCalled();
+
+        const updatedCategoryLanguage = { 
+            ...mockCategories[0], 
+            save: jest.fn().mockResolvedValue({ ...mockCategories[0], language: 'fr'})
+        };
+        Category.findById.mockResolvedValue(updatedCategoryLanguage);
+        const resUpdateLanguage = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ language: 'fr' });
+        expect(resUpdateLanguage.status).toBe(200);
+        expect(resUpdateLanguage.body.language).toBe('fr');
+        expect(updatedCategoryLanguage.save).toHaveBeenCalled();
+
+        const updatedCategoryAll = { 
+            ...mockCategories[0], 
+            save: jest.fn().mockResolvedValue({ ...mockCategories[0], name: 'Updated Category name', description: 'Updated Category description', language: 'fr'})
+        };
+        Category.findById.mockResolvedValue(updatedCategoryAll);
+        const resUpdateAll = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category name', description: 'Updated Category description', language: 'fr' });
+        expect(resUpdateAll.status).toBe(200);        
+        expect(resUpdateAll.body.name).toBe('Updated Category name');
+        expect(resUpdateAll.body.description).toBe('Updated Category description');
+        expect(resUpdateAll.body.language).toBe('fr');
+        expect(updatedCategoryAll.save).toHaveBeenCalled();
     });
 
     it('should return 400 error if save fails', async () => {
-        const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockRejectedValue(new Error('Save failed')) };
+        const categoryToUpdate = { 
+            ...mockCategories[0], 
+            save: jest.fn().mockRejectedValue(new Error('Save failed'))
+        };
         Category.findById.mockResolvedValue(categoryToUpdate);
         const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category Name' });
         expect(res.status).toBe(400);

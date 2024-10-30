@@ -391,11 +391,10 @@ router.patch('/:id', async (req, res, next) => {
             error: err.message 
         });
     }
-    console.log(question)
     res.question = question;
     next();
-}, async (req, res) => {
-    let updated = false;
+}, async (req, res) => {    
+    let updated = false; // Check if any field was updated
 
     // Check options parameter if provided
     if (req.body.options !== undefined && req.body.options !== null) {
@@ -410,6 +409,18 @@ router.patch('/:id', async (req, res, next) => {
             });
         }
 
+        // Check if every option is unique
+        const uniqueOptions = new Set(req.body.options);
+        if (uniqueOptions.size !== req.body.options.length) {
+            return res.status(400).json({     
+                message: 'An error occurred',
+                error: 'Options must be unique',
+                invalidParams: {
+                    options: req.body.options
+                }
+            });
+        }
+        
         // Check for null or empty elements in options parameters
         const hasInvalidOptions = req.body.options.some(option => option === null || option === '');
         if (hasInvalidOptions) {
@@ -423,12 +434,12 @@ router.patch('/:id', async (req, res, next) => {
         }  
 
         // Check if correctAnswer parameters is included in options
-        if (!req.body.options.includes(req.body.correctAnswer)) {
+        if (!req.body.options.includes(res.question.correctAnswer)) {
             return res.status(400).json({
                 message: 'An error occurred',
                 error: 'Correct answer must be one of the options',                
                 invalidParams: {
-                    correctAnswer: req.body.correctAnswer
+                    correctAnswer: res.question.correctAnswer
                 }
             });
         }
@@ -474,7 +485,7 @@ router.patch('/:id', async (req, res, next) => {
                 });
             }
         }        
-    }
+    }    
     
     // Check if rest of parameters are strings    
     if (req.body.questionText !== undefined && req.body.questionText !== null && req.body.questionText !== '' && typeof req.body.questionText !== 'string') {
@@ -485,7 +496,7 @@ router.patch('/:id', async (req, res, next) => {
     }
     if (req.body.explanation !== undefined && req.body.explanation !== null && req.body.explanation !== '' && typeof req.body.explanation !== 'string') {
         invalidParams.explanation = req.body.explanation;
-    }
+    }    
 
     // If there are invalid parameters, return an error response
     if (Object.keys(invalidParams).length > 0) {
@@ -496,20 +507,19 @@ router.patch('/:id', async (req, res, next) => {
         });
     }
 
-    if (req.body.questionText !== null && req.body.questionText !== res.question.questionText) {    
+    if (req.body.questionText !== undefined && req.body.questionText !== null && req.body.questionText !== res.question.questionText) {            
         res.question.questionText = req.body.questionText;
         updated = true;
     }
-    if (req.body.correctAnswer !== null && req.body.correctAnswer !== res.question.correctAnswer) {       
+    if (req.body.correctAnswer !== undefined && req.body.correctAnswer !== null && req.body.correctAnswer !== res.question.correctAnswer) {       
         res.question.correctAnswer = req.body.correctAnswer;
         updated = true;
     }
-    if (req.body.explanation !== null && req.body.explanation !== res.question.explanation) {        
+    if (req.body.explanation !== undefined && req.body.explanation !== null && req.body.explanation !== res.question.explanation) {        
         res.question.explanation = req.body.explanation;
         updated = true;
     }    
     
-    // Check if any field was updated
     if (!updated) {
         return res.status(200).json({
             message: 'No fields were updated' 
@@ -519,13 +529,11 @@ router.patch('/:id', async (req, res, next) => {
     // Update the updatedAt field to the current time
     res.question.updatedAt = new Date();
 
-    console.log(req.body)
-    console.log(res.question)
     try {
         const updatedQuestion = await res.question.save();
         res.json(updatedQuestion);
     } catch (err) {
-        res.status(400).json({ 
+        res.status(500).json({ 
             message: 'An error occurred',
             error: err.message
         }); 
@@ -534,8 +542,34 @@ router.patch('/:id', async (req, res, next) => {
 
 
 // Change toutes les id d'une categorie à une autre
-router.patch('/categories', async (req, res, next) => {
+router.patch('/categories/:oldCategoryId/:newCategoryId', async (req, res, next) => {
     // todo
+    console.log(req.params.oldCategoryId)
+    console.log(req.params.newCategoryId)
+    
+    //try get list of questions > next()
+    //catch error return 400
+
+    //check if oldCategoryId and newCategoryId are not missing
+    // if error return 400
+
+    //check if oldCategoryId and newCategoryId defined not null not '' and string
+    // if error return 400
+
+    //check if oldCategoryId and newCategoryId differents
+    // if yes return 200
+
+    //check if oldCategoryId exist somewhere in list of questions
+    // if error return 400
+
+    //check if newCategoryId exist somewhere in list of questions
+    // if error return 400
+
+    //try change everything from oldCategoryId to newCategoryId    
+    //return 200
+    //catch error
+    //return 500
+    res.json();
 })
 
 

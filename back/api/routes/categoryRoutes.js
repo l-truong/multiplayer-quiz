@@ -361,8 +361,6 @@ router.patch('/:id', async (req, res, next) => {
     res.category = category;
     next();
 }, async (req, res) => {
-    let updated = false;
-
     // Check if parameters are strings and valid
     const invalidParams = {};
     if (req.body.name !== undefined && req.body.name !== null && req.body.name !== '' && typeof req.body.name !== 'string') {
@@ -390,21 +388,21 @@ router.patch('/:id', async (req, res, next) => {
             invalidParams:  req.body.language
         });
     }
-
-    if (req.body.name !== null && req.body.name !== res.category.name) {        
+   
+    // Check if any field was updated
+    let updated = false;
+    if (req.body.name !== undefined && req.body.name !== null && req.body.name !== res.category.name) {        
         res.category.name = req.body.name;
         updated = true;        
-    }
-    if (req.body.description !== null && req.body.description !== res.category.description) {
+    }    
+    if (req.body.description !== undefined && req.body.description !== null && req.body.description !== res.category.description) {
         res.category.description = req.body.description;
         updated = true;
     }
-    if (req.body.language !== null && req.body.language !== res.category.language) {
+    if (req.body.language !== undefined && req.body.language !== null && req.body.language !== res.category.language) {
         res.category.language = req.body.language;
         updated = true;
     }
-
-    // Check if any field was updated
     if (!updated) {
         return res.status(200).json({
             message: 'No fields were updated' 
