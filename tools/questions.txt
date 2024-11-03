@@ -1,0 +1,7 @@
+questionText	options	correctAnswer	explanation	categoryId
+      	[answer 11,answer 12,answer 13,answer 14]	answer 11		605c72c1e4b0a62d24356473
+      Question text 2		answer 22		605c72c1e4b0a62d24356473
+      Question text 3	[answer 31,answer 32,answer 33,answer 34]			605c72c1e4b0a62d24356473
+      Question text 4	[answer 41,answer 42,answer 43,answer 44]	answer 44		
+      Question text 5			explanation	
+      				
