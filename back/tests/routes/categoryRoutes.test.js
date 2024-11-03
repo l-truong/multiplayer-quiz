@@ -8,6 +8,7 @@ const app = express();
 app.use(express.json()); // Middleware for JSON parsing
 app.use('/categories', router); // Use category routes
 
+const headers = ['name', 'description', 'language'];
 const enumLanguage = ['eng', 'fr'];
 const mockCategories = [{
     _id: '6702a8418357fa576c95ea44',
@@ -35,6 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
     jest.clearAllMocks(); // Clear mocks after each test
+    jest.resetAllMocks();
 });
 
 
@@ -256,13 +258,13 @@ describe('POST /categories/bulk', () => {
         expect(res.body.length).toBe(newCategories.length + 1); // due to language not part of enumLanguage in { name: 2, description: 3, language: 4}
         expect(res.body.errors.length).toBe(newCategories.length + 1);
         expect(res.body.errors[0].error).toBe('Parameters must be strings');
-        expect(res.body.errors[0].invalidParams).toEqual({ name: 0});
+        expect(res.body.errors[0].invalidParams).toEqual({ name: 0 });
         expect(res.body.errors[0].category).toMatchObject(newCategories[0]);
         expect(res.body.errors[1].error).toBe('Parameters must be strings');
-        expect(res.body.errors[1].invalidParams).toEqual({ description: 1});
+        expect(res.body.errors[1].invalidParams).toEqual({ description: 1 });
         expect(res.body.errors[1].category).toMatchObject(newCategories[1]);
         expect(res.body.errors[2].error).toBe('Parameters must be strings');
-        expect(res.body.errors[2].invalidParams).toEqual({ name: 2, description: 3, language: 4});
+        expect(res.body.errors[2].invalidParams).toEqual({ name: 2, description: 3, language: 4 });
         expect(res.body.errors[2].category).toMatchObject(newCategories[2]);
 
         expect(Category.startSession).toHaveBeenCalled();
@@ -372,18 +374,12 @@ describe('POST /categories/bulk', () => {
 });
 
 function arrayToCustomCsvBuffer(data) {
-    const headers = ['name', 'description', 'language'];
-    const csvRows = [];
-
-    csvRows.push(headers.join(';'));
-
-    for (const row of data) {
-        const values = headers.map(header => row[header] !== undefined ? row[header] : '');
-        csvRows.push(values.join(';'));
-    }
-
-    const csvString = csvRows.join('\n') + '\n';
-    return Buffer.from(csvString);
+    const rows = data.map((row) => {
+        return headers.map(header => {           
+            return row[header] || '';
+        }).join(';');
+    });
+    return Buffer.from([headers.join(';'), ...rows].join('\n'));
 }
 
 describe('POST /categories/csv', () => {
@@ -476,7 +472,7 @@ describe('POST /categories/csv', () => {
         expect(res.body.errors[0].category).toMatchObject(newCategories[0]);
         expect(res.body.errors[1].error).toBe('Language must be part of [' + enumLanguage + ']');
         expect(res.body.errors[1].category).toMatchObject(newCategories[0]);
-        expect(res.body.errors[1].invalidParams).toEqual({ language: "spa"});
+        expect(res.body.errors[1].invalidParams).toEqual({ language: 'spa'});
         expect(res.body.errors[2].error).toBe('Language must be part of [' + enumLanguage + ']');
         expect(res.body.errors[2].category).toMatchObject(newCategories[1]);
         expect(res.body.errors[2].invalidParams).toEqual({ language: 'jap'});
@@ -562,7 +558,7 @@ describe('PATCH /categories/:id', () => {
         expect(res.body.error).toBe('Database error');
     });
 
-    it('should return 400 error if parameter name is not a string', async () => {
+    it('should return 400 error if parameters are not a string', async () => {
         const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
 
@@ -653,14 +649,14 @@ describe('PATCH /categories/:id', () => {
         expect(updatedCategoryAll.save).toHaveBeenCalled();
     });
 
-    it('should return 400 error if save fails', async () => {
+    it('should return 500 error if save fails', async () => {
         const categoryToUpdate = { 
             ...mockCategories[0], 
             save: jest.fn().mockRejectedValue(new Error('Save failed'))
         };
         Category.findById.mockResolvedValue(categoryToUpdate);
         const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category Name' });
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Save failed');
     });

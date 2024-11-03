@@ -12,9 +12,9 @@ const Category = require('../models/category');
 router.get('/', async (req, res) => {
     try {
         const categories = await Category.find();
-        res.json(categories);
+        return res.json(categories);
     } catch (err) {
-        res.status(500).json({ 
+        return res.status(500).json({ 
             message: 'An error occurred', 
             error: err.message 
         });
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res, next) => {
     res.category = category;
     next();
 }, (req, res) => {
-    res.json(res.category);
+    return res.json(res.category);
 });
 
 
@@ -106,9 +106,9 @@ router.post('/', async (req, res) => {
 
     try {
         const newCategory = await category.save();
-        res.status(201).json(newCategory);
+        return res.status(201).json(newCategory);
     } catch (err) {
-        res.status(500).json({ 
+        return res.status(500).json({ 
             message: 'An error occurred', 
             error: err.message 
         });
@@ -128,7 +128,7 @@ router.post('/bulk', async (req, res) => {
     }
         
     // Start a session for the transaction
-    const session = await Category.startSession(); 
+    const session = await Category.startSession();
     session.startTransaction();
         
     try {
@@ -150,18 +150,18 @@ router.post('/bulk', async (req, res) => {
                     error: 'Missing parameters',
                     missing: missingParams,                    
                     category: categoryData
-                });                   
+                });
             }
 
             // Check if parameters are strings and valid
             const invalidParams = {};
-            if (!missingParams.includes("name") && typeof categoryData.name !== 'string') {
+            if (!missingParams.includes('name') && typeof categoryData.name !== 'string') {
                 invalidParams.name = categoryData.name;
             }
-            if (!missingParams.includes("description") && typeof categoryData.description !== 'string') {
+            if (!missingParams.includes('description') && typeof categoryData.description !== 'string') {
                 invalidParams.description = categoryData.description;
             }
-            if (!missingParams.includes("language") && typeof categoryData.language !== 'string') {
+            if (!missingParams.includes('language') && typeof categoryData.language !== 'string') {
                 invalidParams.language = categoryData.language;
             }
 
@@ -170,18 +170,18 @@ router.post('/bulk', async (req, res) => {
                     error: 'Parameters must be strings',
                     category: categoryData,                    
                     invalidParams           
-                });                    
+                });
             }      
             
             // Check if there is invalid language parameter
             if (!missingParams.includes('language') && !Category.schema.path('language').enumValues.includes(categoryData.language)) {
                 errors.push({
-                    error: 'Language must be part of [' + Category.schema.path('language').enumValues + "]",                    
+                    error: 'Language must be part of [' + Category.schema.path('language').enumValues + ']',                    
                     category: categoryData,
                     invalidParams: {
-                        "language": categoryData.language
+                        'language': categoryData.language
                     }
-                });  
+                });
             }             
         }
 
@@ -207,14 +207,14 @@ router.post('/bulk', async (req, res) => {
         }
 
         await session.commitTransaction(); // Commit if all went well
-        res.status(201).json({ 
+        return res.status(201).json({ 
             message: 'Categories created successfully', 
             categories: createdCategories
         });
 
     } catch (err) {
         await session.abortTransaction(); // Rollback on error
-        res.status(500).json({ 
+        return res.status(500).json({ 
             message: 'An error occurred',
             error: err.message 
         });
@@ -253,7 +253,7 @@ router.post('/csv', upload.single('categories'), async (req, res) => {
         }
             
         // Start a session for the transaction
-        const session = await Category.startSession(); 
+        const session = await Category.startSession();
         session.startTransaction();
             
         try {
@@ -265,7 +265,7 @@ router.post('/csv', upload.single('categories'), async (req, res) => {
                 const requiredParams = ['name', 'description', 'language'];
 
                 requiredParams.forEach(param => {
-                    if (categoryData[param] === undefined || categoryData[param] === null || categoryData[param] === '') {
+                    if (categoryData[param] === '') {
                         missingParams.push(param);
                     }
                 });
@@ -275,18 +275,18 @@ router.post('/csv', upload.single('categories'), async (req, res) => {
                         error: 'Missing parameters',
                         missing: missingParams,                    
                         category: categoryData
-                    });                   
+                    });
                 }
                 
                 // Check if there is invalid language parameter
                 if (!missingParams.includes('language') && !Category.schema.path('language').enumValues.includes(categoryData.language)) {
                     errors.push({
-                        error: 'Language must be part of [' + Category.schema.path('language').enumValues + "]",                    
+                        error: 'Language must be part of [' + Category.schema.path('language').enumValues + ']',                    
                         category: categoryData,
                         invalidParams: {
-                            "language": categoryData.language
+                            'language': categoryData.language
                         }
-                    });  
+                    });
                 }             
             }
 
@@ -312,22 +312,21 @@ router.post('/csv', upload.single('categories'), async (req, res) => {
             }
 
             await session.commitTransaction(); // Commit if all went well
-            res.status(201).json({ 
+            return res.status(201).json({ 
                 message: 'Categories created successfully', 
                 categories: createdCategories
             });
 
         } catch (err) {
             await session.abortTransaction(); // Rollback on error
-            res.status(500).json({ 
+            return res.status(500).json({ 
                 message: 'An error occurred',
                 error: err.message 
             });
         } finally {
             session.endSession(); // End the session
         }
-
-
+        
     } catch (err) {
         return res.status(500).json({ 
             message: 'An error occurred',
@@ -384,7 +383,7 @@ router.patch('/:id', async (req, res, next) => {
     if (req.body.language !== undefined && req.body.language !== null && req.body.language !== '' && !Category.schema.path('language').enumValues.includes(req.body.language)) {
         return res.status(400).json({
             message: 'An error occurred',
-            error: 'Language must be part of [' + Category.schema.path('language').enumValues + "]",
+            error: 'Language must be part of [' + Category.schema.path('language').enumValues + ']',
             invalidParams:  req.body.language
         });
     }
@@ -393,7 +392,7 @@ router.patch('/:id', async (req, res, next) => {
     let updated = false;
     if (req.body.name !== undefined && req.body.name !== null && req.body.name !== res.category.name) {        
         res.category.name = req.body.name;
-        updated = true;        
+        updated = true;
     }    
     if (req.body.description !== undefined && req.body.description !== null && req.body.description !== res.category.description) {
         res.category.description = req.body.description;
@@ -414,12 +413,12 @@ router.patch('/:id', async (req, res, next) => {
 
     try {
         const updatedCategory = await res.category.save();
-        res.json(updatedCategory);
+        return res.json(updatedCategory);
     } catch (err) {
-        res.status(400).json({ 
+        return res.status(500).json({ 
             message: 'An error occurred',
             error: err.message
-        }); 
+        });
     }
 });
 
@@ -433,12 +432,12 @@ router.delete('/all', async (req, res) => {
     try {
         const result = await Category.deleteMany({});
 
-        res.json({
+        return res.json({
             message: 'All categories deleted',
             deletedCount: result.deletedCount,
         });
     } catch (err) {
-        res.status(500).json({
+        return res.status(500).json({
             message: 'An error occurred',
             error: err.message,
         });
@@ -475,7 +474,7 @@ router.delete('/:id', async (req, res, next) => {
             });
         }
 
-        res.json({
+        return res.json({
             message: 'Category deleted',
             deletedCategory: {
                 _id: deletedCategory._id,
@@ -489,7 +488,7 @@ router.delete('/:id', async (req, res, next) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ 
+        return res.status(500).json({ 
             message: 'An error occurred',
             error: err.message 
         });
