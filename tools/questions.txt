@@ -1,7 +1,101 @@
-questionText	options	correctAnswer	explanation	categoryId
-      	[answer 11,answer 12,answer 13,answer 14]	answer 11		605c72c1e4b0a62d24356473
-      Question text 2		answer 22		605c72c1e4b0a62d24356473
-      Question text 3	[answer 31,answer 32,answer 33,answer 34]			605c72c1e4b0a62d24356473
-      Question text 4	[answer 41,answer 42,answer 43,answer 44]	answer 44		
-      Question text 5			explanation	
-      				
+questionText;options;correctAnswer;explanation;categoryId
+What is the capital of France?;['Berlin', 'Madrid', 'Paris', 'Rome'];Paris;Paris has been the capital of France since 508 AD;General Knowledge
+"Who wrote ""Hamlet""?";['Charles Dickens', 'Jane Austen', 'William Shakespeare', 'Mark Twain'];William Shakespeare;"""Hamlet"" is one of Shakespeare's most famous plays";General Knowledge
+What is the largest ocean on Earth?;['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Pacific Ocean'];Pacific Ocean;The Pacific Ocean covers more area than all the landmasses combined;General Knowledge
+Who painted the Mona Lisa?;['Vincent van Gogh', 'Pablo Picasso', 'Leonardo da Vinci', 'Claude Monet'];Leonardo da Vinci;The Mona Lisa is a renowned work by the Italian Renaissance artist;General Knowledge
+What is the longest river in the world?;['Amazon River', 'Nile River', 'Yangtze River', 'Mississippi River'];Nile River;The Nile River is traditionally considered the longest river;General Knowledge
+Which element has the chemical symbol 'O'?;['Osmium', 'Oxygen', 'Gold', 'Hydrogen'];Oxygen;Oxygen is essential for respiration in most living organisms;General Knowledge
+In which year did the Titanic sink?;['1912', '1905', '1920', '1898'];1912;The Titanic sank on its maiden voyage in April 1912;General Knowledge
+What is the smallest planet in our solar system?;['Mars', 'Mercury', 'Venus', 'Earth'];Mercury;Mercury is the smallest planet and closest to the Sun;General Knowledge
+Who discovered penicillin?;['Marie Curie', 'Alexander Fleming', 'Louis Pasteur', 'Albert Einstein'];Alexander Fleming;Fleming discovered penicillin in 1928, revolutionizing medicine;General Knowledge
+What is the main ingredient in guacamole?;['Tomato', 'Avocado', 'Onion', 'Pepper'];Avocado;Guacamole is primarily made from mashed avocados;General Knowledge
+Which country is known as the Land of the Rising Sun?;['China', 'Japan', 'Thailand', 'South Korea'];Japan;Japan is called this due to its position east of the Asian continent;Geography
+What is the capital city of Australia?;['Sydney', 'Canberra', 'Melbourne', 'Brisbane'];Canberra;Canberra was selected as a compromise between Sydney and Melbourne;Geography
+Which continent is the Sahara Desert located in?;['Asia', 'Africa', 'Australia', 'North America'];Africa;The Sahara is the largest hot desert in the world, located in North Africa;Geography
+What river flows through Egypt?;['Amazon', 'Nile', 'Mississippi', 'Yangtze'];Nile;The Nile is often regarded as the lifeblood of Egypt;Geography
+Which mountain range separates Europe and Asia?;['Himalayas', 'Andes', 'Ural', 'Rocky Mountains'];Ural;The Ural Mountains are traditionally considered the boundary between the two continents;Geography
+What is the largest country in the world by area?;['Canada', 'China', 'Russia', 'United States'];Russia;Russia spans over 17 million square kilometers;Geography
+Which ocean is the largest?;['Atlantic', 'Indian', 'Arctic', 'Pacific'];Pacific;The Pacific Ocean covers more than 63 million square miles;Geography
+What is the capital of Canada?;['Toronto', 'Vancouver', 'Ottawa', 'Montreal'];Ottawa;Ottawa is the political and administrative center of Canada;Geography
+In which country is the Great Barrier Reef located?;['Australia', 'Brazil', 'Mexico', 'Philippines'];Australia;The Great Barrier Reef is the world's largest coral reef system;Geography
+What is the smallest country in the world?;['Monaco', 'Vatican City', 'San Marino', 'Nauru'];Vatican City;Vatican City is an independent city-state enclaved within Rome;Geography
+Who was the first President of the United States?;['Thomas Jefferson', 'Abraham Lincoln', 'George Washington', 'John Adams'];George Washington;Washington served as President from 1789 to 1797;History
+What ancient civilization built the pyramids?;['Greeks', 'Romans', 'Egyptians', 'Mesopotamians'];Egyptians;The ancient Egyptians constructed pyramids as tombs for their pharaohs;History
+What year did World War II begin?;['1939', '1941', '1945', '1936'];1939;World War II began with the invasion of Poland in September 1939;History
+Who was the first woman to fly solo across the Atlantic Ocean?;['Amelia Earhart', 'Bessie Coleman', 'Harriet Quimby', 'Jacqueline Cochran'];Amelia Earhart;Earhart completed her historic flight in 1932;History
+What was the name of the ship that sank after hitting an iceberg in 1912?;['Lusitania', 'Titanic', 'Britannic', 'Olympic'];Titanic;The Titanic sank on its maiden voyage on April 15, 1912;History
+Who is known as the Father of Modern Physics?;['Isaac Newton', 'Albert Einstein', 'Galileo Galilei', 'Niels Bohr'];Albert Einstein;Einstein developed the theory of relativity, changing our understanding of physics;History
+What was the main cause of the Cold War?;['Capitalism vs. Communism', 'World War I', 'The Great Depression', 'Imperialism'];Capitalism vs. Communism;The Cold War was characterized by ideological conflict between the U.S. and the Soviet Union;History
+In what year did the Berlin Wall fall?;['1989', '1991', '1987', '1990'];1989;The fall of the Berlin Wall symbolized the end of the Cold War;History
+Who was the last Tsar of Russia?;['Nicholas II', 'Alexander III', 'Peter the Great', 'Catherine the Great'];Nicholas II;Nicholas II was executed during the Russian Revolution in 1918;History
+What year did the United States declare independence?;['1776', '1783', '1791', '1765'];1776;The Declaration of Independence was adopted on July 4, 1776;History
+What is the chemical symbol for water?;['H2O', 'O2', 'CO2', 'NaCl'];H2O;Water is composed of two hydrogen atoms and one oxygen atom;Science and Nature
+What planet is known as the Red Planet?;['Earth', 'Mars', 'Jupiter', 'Venus'];Mars;Mars appears red due to iron oxide, commonly known as rust;Science and Nature
+What gas do plants absorb from the atmosphere?;['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Helium'];Carbon Dioxide;Plants use carbon dioxide during photosynthesis to produce oxygen;Science and Nature
+What is the powerhouse of the cell?;['Nucleus', 'Mitochondria', 'Ribosomes', 'Golgi apparatus'];Mitochondria;Mitochondria generate ATP, the energy currency of the cell;Science and Nature
+How many bones are in the adult human body?;['206', '205', '210', '201'];206;Adults typically have 206 bones, while infants have more that fuse over time;Science and Nature
+What is the largest mammal in the world?;['Elephant', 'Blue Whale', 'Giraffe', 'Great White Shark'];Blue Whale;Blue whales can reach lengths of up to 100 feet and weigh as much as 200 tons;Science and Nature
+What type of celestial body is the Sun?;['Planet', 'Star', 'Moon', 'Asteroid'];Star;The Sun is a star at the center of our solar system;Science and Nature
+What is the hardest natural substance on Earth?;['Gold', 'Iron', 'Diamond', 'Quartz'];Diamond;Diamonds are formed under extreme pressure and are known for their hardness;Science and Nature
+What part of the plant conducts photosynthesis?;['Roots', 'Stem', 'Leaves', 'Flowers'];Leaves;Leaves contain chlorophyll, which captures sunlight for photosynthesis;Science and Nature
+What is the process by which plants make their food?;['Digestion', 'Photosynthesis', 'Respiration', 'Transpiration'];Photosynthesis;Photosynthesis converts sunlight, water, and carbon dioxide into glucose and oxygen;Science and Nature
+"Who directed ""Titanic""?";['James Cameron', 'Steven Spielberg', 'George Lucas', 'Martin Scorsese'];James Cameron;James Cameron directed the blockbuster film released in 1997;Cinema and Television
+What is the highest-grossing film of all time (as of 2023)?;['Avatar', 'Avengers: Endgame', 'Titanic', 'Star Wars: The Force Awakens'];Avatar;"Avatar"" reclaimed its title with a re-release, surpassing ""Avengers: Endgame";Cinema and Television
+"Which character is known as the ""Boy Who Lived""?";['Hermione Granger', 'Harry Potter', 'Ron Weasley', 'Draco Malfoy'];Harry Potter;Harry Potter is the main character in J.K. Rowling's series;Cinema and Television
+What TV show features the character Sheldon Cooper?;['Friends', 'The Big Bang Theory', 'How I Met Your Mother', 'Brooklyn Nine-Nine'];The Big Bang Theory;Sheldon Cooper is one of the main characters in this sitcom;Cinema and Television
+"Who played Jack Dawson in ""Titanic""?";['Brad Pitt', 'Leonardo DiCaprio', 'Johnny Depp', 'Tom Cruise'];Leonardo DiCaprio;DiCaprio starred as the romantic lead in the 1997 film;Cinema and Television
+"What is the name of the fictional African country in ""Black Panther""?";['Wakanda', 'Zamunda', 'Narnia', 'Elbonia'];Wakanda;Wakanda is known for its advanced technology and vibranium resources.;Cinema and Television
+"Who is the creator of the television series ""The Simpsons""?";['Matt Groening', 'Seth MacFarlane', 'Trey Parker', 'Mike Judge'];Matt Groening;"Groening created ""The Simpsons,"" which first aired in 1989.";Cinema and Television
+What animated film features a talking fish searching for his son?;['Finding Nemo', 'Toy Story', 'The Lion King', 'Zootopia'];Finding Nemo;The film follows Marlin's journey to find his son, Nemo.;Cinema and Television
+"What is the name of the main character in ""The Matrix""?";['Neo', 'Trinity', 'Morpheus', 'Agent Smith'];Neo;Neo, played by Keanu Reeves, is the protagonist in the sci-fi film.;Cinema and Television
+Who won the Academy Award for Best Actress in 2021?;['Frances McDormand', 'Viola Davis', 'Carey Mulligan', 'Andra Day'];Frances McDormand;"McDormand won for her role in ""Nomadland.""";Cinema and Television
+Quel est le plus grand océan du monde ?;['Atlantique', 'Indien', 'Arctique', 'Pacifique'];Pacifique;L'océan Pacifique couvre plus de 63 millions de miles carrés.;Culture générale
+"Qui a écrit ""Les Misérables"" ?";['Victor Hugo', 'Émile Zola', 'Gustave Flaubert', 'Marcel Proust'];Victor Hugo;"""Les Misérables"" est un chef-d'œuvre de la littérature française.";Culture générale
+Quel est le pays d'origine de la pizza ?;['France', 'Italie', 'Grèce', 'Espagne'];Italie;La pizza est originaire de Naples, en Italie.;Culture générale
+Qui a inventé le téléphone ?;['Alexander Graham Bell', 'Thomas Edison', 'Nikola Tesla', 'Gustav Eiffel'];Alexander Graham Bell;Bell a breveté le téléphone en 1876.;Culture générale
+Quel est le symbole chimique du fer ?;['Fe', 'F', 'Ir', 'Fer'];Fe;"Le fer a pour symbole chimique ""Fe"" provenant du latin ""ferrum"".";Culture générale
+Quel est le plus haut sommet du monde ?;['K2', 'Mont Everest', 'Kangchenjunga', 'Mont Blanc'];Mont Everest;Le Mont Everest culmine à 8 848 mètres d'altitude.;Culture générale
+"Qui a peint ""La Nuit étoilée"" ?";['Claude Monet', 'Vincent van Gogh', 'Pablo Picasso', 'Henri Matisse'];Vincent van Gogh;"""La Nuit étoilée"" est l'une des œuvres les plus célèbres de Van Gogh.";Culture générale
+Quel est le principal ingrédient du pain ?;['Eau', 'Sel', 'Farine', 'Sucre'];Farine;La farine est l'ingrédient de base pour faire du pain.;Culture générale
+Quelle est la capitale de l'Italie ?;['Rome', 'Milan', 'Florence', 'Naples'];Rome;Rome est connue pour ses monuments historiques et son histoire riche.;Culture générale
+Quel est le film le plus primé aux Oscars ?;['Titanic', 'Le Parrain', 'Autant en emporte le vent', 'Avengers: Endgame'];Titanic;"""Titanic"" a remporté 11 Oscars en 1998.";Culture générale
+Quelle est la plus grande île du monde ?;['Groenland', 'Nouvelle-Guinée', 'Borneo', 'Madagascar'];Groenland;La Groenland est la plus grande île, recouverte principalement de glace.;Géographie
+Quel est le pays le plus peuplé ?;['Inde', 'États-Unis', 'Chine', 'Brésil'];Chine;La Chine a une population de plus de 1,4 milliard d'habitants.;Géographie
+Quelle est la capitale du Japon ?;['Séoul', 'Tokyo', 'Pékin', 'Bangkok'];Tokyo;Tokyo est la capitale du Japon et une métropole animée.;Géographie
+Quelle chaîne de montagnes traverse l'Amérique du Sud ?;['Alpes', 'Himalaya', 'Andes', 'Rocky Mountains'];Andes;Les Andes sont la plus longue chaîne de montagnes du monde.;Géographie
+Quel est le fleuve le plus long d'Europe ?;['Danube', 'Vistule', 'Rhin', 'Loire'];Danube;Le Danube mesure environ 2 860 kilomètres de long.;Géographie
+Quel pays est connu pour ses fjords ?;['Suède', 'Finlande', 'Norvège', 'Islande'];Norvège;La Norvège est célèbre pour ses magnifiques fjords.;Géographie
+Quelle est la capitale de l'Argentine ?;['Buenos Aires', 'Santiago', 'Lima', 'Bogotá'];Buenos Aires;Buenos Aires est connue pour sa culture et sa danse tango.;Géographie
+Quel est le désert le plus grand du monde ?;['Sahara', 'Gobi', 'Kalahari', 'Désert de l'Antarctique'];Désert de l'Antarctique;Le désert de l'Antarctique est le plus vaste et le plus sec.;Géographie
+Quelle est la capitale de l'Australie ?;['Sydney', 'Canberra', 'Melbourne', 'Brisbane'];Canberra;Canberra a été choisie comme un compromis entre Sydney et Melbourne.;Géographie
+Quel est le point le plus bas de la Terre ?;['Mer Morte', 'Caverne de Mammoth', 'Dépression de Mariana', 'Cratère de Chicxulub'];Mer Morte;La Mer Morte est située à environ 430 mètres sous le niveau de la mer.;Géographie
+Qui a été le premier président de la France ?;['Charles de Gaulle', 'Napoléon Bonaparte', 'Georges Pompidou', 'François Mitterrand'];Napoléon Bonaparte;Napoléon a été le premier président en 1804.;Histoire
+Quand a eu lieu la Révolution française ?;['1789', '1792', '1776', '1804'];1789;La Révolution française a commencé en juillet 1789.;Histoire
+Qui a découvert l'Amérique ?;['Christophe Colomb', 'Ferdinand Magellan', 'Vasco de Gama', 'Hernán Cortés'];Christophe Colomb;Colomb a découvert l'Amérique en 1492.;Histoire
+Qui était le roi de France pendant la Révolution ?;['Louis XIV', 'Louis XVI', 'Louis XV', 'Charles X'];Louis XVI;Louis XVI a été exécuté en 1793.;Histoire
+Quelle guerre a opposé le Nord et le Sud des États-Unis ?;['Guerre de Sécession', 'Première Guerre mondiale', 'Deuxième Guerre mondiale', 'Guerre froide'];Guerre de Sécession;La Guerre de Sécession a eu lieu de 1861 à 1865.;Histoire
+Quel mouvement a été fondé par Martin Luther King ?;['Mouvement des droits civiques', 'Mouvement féministe', 'Mouvement abolitionniste', 'Mouvement écologiste'];Mouvement des droits civiques;King a lutté pour l'égalité raciale aux États-Unis.;Histoire
+Quel événement a déclenché la Première Guerre mondiale ?;['L'assassinat de l'archiduc François-Ferdinand', 'La Révolution russe', 'L'invasion de la Pologne', 'Le traité de Versailles'];L'assassinat de l'archiduc François-Ferdinand;Cet événement a eu lieu en 1914.;Histoire
+"Qui a écrit ""Le Contrat social"" ?";['Jean-Jacques Rousseau', 'Voltaire', 'Montesquieu', 'Diderot'];Jean-Jacques Rousseau;Rousseau a écrit sur la politique et la société au XVIIIe siècle.;Histoire
+Quand a été signé le traité de Versailles ?;['1918', '1919', '1920', '1921'];1919;Le traité de Versailles a mis fin à la Première Guerre mondiale.;Histoire
+Qui était la première femme à obtenir le prix Nobel ?;['Marie Curie', 'Rosalind Franklin', 'Ada Lovelace', 'Florence Nightingale'];Marie Curie;Marie Curie a reçu le prix Nobel de physique en 1903.;Histoire
+Quel est l'organe responsable de la respiration ?;['Coeur', 'Poumons', 'Foie', 'Reins'];Poumons;Les poumons permettent l'échange de gaz dans le corps.;Science et Nature
+Quel est le symbole chimique du sodium ?;['Na', 'S', 'N', 'So'];Na;"Le sodium est représenté par le symbole ""Na"", dérivé du latin.";Science et Nature
+Combien de planètes dans notre système solaire ?;['8', '9', '7', '6'];8;Il y a huit planètes dans notre système solaire.;Science et Nature
+Quelle est la plus grande espèce de requin ?;['Requin blanc', 'Requin baleine', 'Requin tigre', 'Requin marteau'];Requin baleine;Le requin baleine peut mesurer jusqu'à 12 mètres de long.;Science et Nature
+Quel est le principal gaz à effet de serre ?;['Oxygène', 'Dioxyde de carbone', 'Méthane', 'Azote'];Dioxyde de carbone;Le dioxyde de carbone est le principal responsable du réchauffement climatique.;Science et Nature
+Quel est le processus par lequel les plantes fabriquent leur nourriture ?;['Respiration', 'Photosynthèse', 'Fermentation', 'Digestion'];Photosynthèse;Les plantes convertissent la lumière du soleil en énergie.;Science et Nature
+Quel animal est connu pour sa mémoire exceptionnelle ?;['Éléphant', 'Chien', 'Dauphin', 'Chat'];Éléphant;Les éléphants sont connus pour leur mémoire remarquable.;Science et Nature
+Quel est l'organe qui pompe le sang dans le corps ?;['Foie', 'Cerveau', 'Coeur', 'Reins'];Coeur;Le coeur est le moteur circulatoire du corps.;Science et Nature
+Quel est l'élément le plus léger ?;['Hydrogène', 'Hélium', 'Lithium', 'Carbone'];Hydrogène;L'hydrogène est l'élément le plus léger et le plus abondant dans l'univers.;Science et Nature
+Quelle est la fonction principale des racines des plantes ?;['Absorption d'eau', 'Photosynthèse', 'Support', 'Reproduction'];Absorption d'eau;Les racines absorbent l'eau et les nutriments du sol.;Cinéma et Télévision
+"Qui a réalisé ""Titanic"" ?";['James Cameron', 'Steven Spielberg', 'Martin Scorsese', 'Christopher Nolan'];James Cameron;"James Cameron a réalisé ""Titanic"" en 1997.";Cinéma et Télévision
+Quel film a remporté l'Oscar du meilleur film en 2020 ?;['Parasite', '1917', 'Joker', 'Once Upon a Time in Hollywood'];Parasite;"""Parasite"" a été le premier film non anglophone à remporter cet Oscar.";Cinéma et Télévision
+"Qui joue le rôle principal dans ""Le Parrain"" ?";['Al Pacino', 'Robert De Niro', 'Marlon Brando', 'Jack Nicholson'];Marlon Brando;Marlon Brando incarne Vito Corleone dans ce classique du cinéma.;Cinéma et Télévision
+Quel est le nom de la série mettant en scène un groupe de survivants sur une île déserte ?;['Lost', 'Survivor', 'The Walking Dead', 'Stranger Things'];Lost;"""Lost"" a captivé le public avec ses mystères et ses personnages.";Cinéma et Télévision
+"Quel acteur a joué le rôle de Jack Dawson dans ""Titanic"" ?";['Leonardo DiCaprio', 'Brad Pitt', 'Matt Damon', 'Johnny Depp'];Leonardo DiCaprio;DiCaprio a joué le rôle emblématique de Jack Dawson.;Cinéma et Télévision
+Quel film d'animation a été produit par Pixar et met en scène des jouets ?;['Toy Story', 'Monstres et Cie', 'Finding Nemo', 'Cars'];Toy Story;"""Toy Story"" a été le premier film d'animation entièrement en 3D.";Cinéma et Télévision
+Quelle série suit les aventures d'un groupe d'amis à New York ?;['Friends', 'How I Met Your Mother', 'The Office', 'Seinfeld'];Friends;"""Friends"" est une série emblématique des années 90.";Cinéma et Télévision
+Quel film raconte l'histoire de la vie d'un célèbre boxeur nommé Rocky ?;['Rocky', 'Raging Bull', 'Creed', 'The Fighter'];Rocky;"""Rocky"" est un film culte qui a remporté l'Oscar du meilleur film.";Cinéma et Télévision
+"Qui interprète le personnage de Walter White dans ""Breaking Bad"" ?";['Bryan Cranston', 'Aaron Paul', 'Bob Odenkirk', 'Dean Norris'];Bryan Cranston;Cranston a reçu des éloges pour son rôle dans cette série acclamée.;Cinéma et Télévision
+Quel film de Tim Burton met en scène un personnage nommé Edward aux mains d'argent ?;['Edward Scissorhands', 'Beetlejuice', 'The Nightmare Before Christmas', 'Sweeney Todd'];Edward Scissorhands;"""Edward aux mains d'argent"" est l'un des films emblématiques de Tim Burton.";Cinéma et Télévision
