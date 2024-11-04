@@ -1083,88 +1083,98 @@ describe('PATCH /questions/:id', () => {
 
 // PATCH /questions/categories
 describe('PATCH /categories/:oldCategoryId/:newCategoryId', () => {
-    it('should return 400 if oldCategoryId or newCategoryId is missing', async () => {
-        const res = await request(app).patch('/questions/categories/oldId');
+    it('should return 400 if oldCategoryId or newCategoryId are missing', async () => {
+        const resOldCategoryIdMissing = await request(app).patch('/questions/categories//newCategoryId');       
+        expect(resOldCategoryIdMissing.status).toBe(400);
+        expect(resOldCategoryIdMissing.body.message).toBe('An error occurred');
+        expect(resOldCategoryIdMissing.body.error).toEqual('Both oldCategoryId and newCategoryId are required');
         
-        console.log("res.body", res.body)
-        //expect(res.status).toBe(400);
-        //expect(res.body.message).toBe('An error occurred');
-        //expect(res.body.error).toBe('Both oldCategoryId and newCategoryId are required');
-    });
-
-    /*it('should return 400 if oldCategoryId or newCategoryId is not a non-empty string', async () => {
-        const resEmpty = await request(app).patch('/questions/categories/oldId/');
-        expect(resEmpty.status).toBe(400);
-        expect(resEmpty.body.message).toBe('An error occurred');
-        expect(resEmpty.body.error).toBe('oldCategoryId and newCategoryId must be non-empty strings');
-
-        const resInvalid = await request(app).patch('/questions/categories/oldId/    ');
-        expect(resInvalid.status).toBe(400);
-        expect(resInvalid.body.message).toBe('An error occurred');
-        expect(resInvalid.body.error).toBe('oldCategoryId and newCategoryId must be non-empty strings');
+        const resNewCategoryIdMissing = await request(app).patch('/questions/categories/oldCategoryId');       
+        expect(resNewCategoryIdMissing.status).toBe(400);
+        expect(resNewCategoryIdMissing.body.message).toBe('An error occurred');
+        expect(resNewCategoryIdMissing.body.error).toEqual('Both oldCategoryId and newCategoryId are required');
+    
+        const resBothCategoriesIdMissing = await request(app).patch('/questions/categories//');                
+        expect(resBothCategoriesIdMissing.status).toBe(400);        
+        expect(resBothCategoriesIdMissing.body.message).toBe('An error occurred');
+        expect(resBothCategoriesIdMissing.body.error).toBe('Both oldCategoryId and newCategoryId are required');
     });
 
     it('should return 400 if oldCategoryId or newCategoryId has invalid ObjectId format', async () => {
-        const resInvalidId = await request(app).patch('/questions/categories/invalidId/newValidId');
-        expect(resInvalidId.status).toBe(400);
-        expect(resInvalidId.body.message).toBe('An error occurred');
-        expect(resInvalidId.body.error).toBe('Invalid ObjectId format');
-        expect(resInvalidId.body.invalidParams).toEqual({ oldCategoryId: 'invalidId' });
+        const resInvalidOldId = await request(app).patch('/questions/categories/invalidId/671e6e7393cee089f87f1f3d');
+        expect(resInvalidOldId.status).toBe(400);
+        expect(resInvalidOldId.body.message).toBe('An error occurred');
+        expect(resInvalidOldId.body.error).toBe('Invalid ObjectId format');
+        expect(resInvalidOldId.body.invalidParams).toEqual({ oldCategoryId: 'invalidId' });
+
+        const resInvalidNewId = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/newValidId');
+        expect(resInvalidNewId.status).toBe(400);
+        expect(resInvalidNewId.body.message).toBe('An error occurred');
+        expect(resInvalidNewId.body.error).toBe('Invalid ObjectId format');
+        expect(resInvalidNewId.body.invalidParams).toEqual({ newCategoryId: 'newValidId' });
+
+        const resInvalidBothId = await request(app).patch('/questions/categories/invalidId/newValidId');
+        expect(resInvalidBothId.status).toBe(400);
+        expect(resInvalidBothId.body.message).toBe('An error occurred');
+        expect(resInvalidBothId.body.error).toBe('Invalid ObjectId format');
+        expect(resInvalidBothId.body.invalidParams).toEqual({ oldCategoryId: 'invalidId', newCategoryId: 'newValidId'});
+    });
+
+    it('should return 200 if oldCategoryId and newCategoryId are the same', async () => {
+        const res = await request(app).patch('/questions/categories/671e6e7393cee089f87f1f3d/671e6e7393cee089f87f1f3d');
+        expect(res.status).toBe(200);
+        expect(res.body.message).toBe('No change occured;oldCategoryId and newCategoryId are the same');
     });
 
     it('should return 400 if oldCategoryId does not exist in any questions', async () => {
-        Question.find.mockResolvedValue([]);
-        const res = await request(app).patch('/questions/categories/oldCategoryId/newCategoryId');
+        const res = await request(app).patch('/questions/categories/671e6e7393cee089f87f1f37/671e6e7393cee089f87f1f3d');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('oldCategoryId does not exist in any questions');
     });
 
-    it('should return 400 if newCategoryId does not exist in Categories', async () => {
-        const mockQuestions = [{ categoryId: 'oldCategoryId' }];
-        Question.find.mockResolvedValue(mockQuestions);
-        const res = await request(app).patch('/questions/categories/oldCategoryId/invalidNewCategoryId');
+    /*it('should return 400 if newCategoryId does not exist in Categories', async () => {
+        Category.findById.mockResolvedValue(null);
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f37');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Invalid categoryId. Category does not exist');
-        expect(res.body.invalidParams).toEqual({ categoryId: 'invalidNewCategoryId' });
-    });
+        expect(res.body.invalidParams).toEqual({ categoryId: '671e6e7393cee089f87f1f37' });
+    });*/
 
-    it('should return 200 if oldCategoryId and newCategoryId are the same', async () => {
-        const res = await request(app).patch('/questions/categories/sameId/sameId');
-        expect(res.status).toBe(200);
-        expect(res.body.message).toBe('No change occured;oldCategoryId and newCategoryId are the same');
-    });
-
-    it('should update categoryId for questions and return updated questions', async () => {
-        const mockQuestions = [
-            { _id: 'question1', categoryId: 'oldCategoryId' },
-            { _id: 'question2', categoryId: 'oldCategoryId' }
-        ];
+    /*it('should update categoryId for questions and return updated questions', async () => {
         const updatedQuestions = [
-            { _id: 'question1', categoryId: 'newCategoryId' },
-            { _id: 'question2', categoryId: 'newCategoryId' }
+            { 
+                ...mockQuestions[0], 
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: '671e6e7393cee089f87f1f3d'})
+            },
+            { 
+                ...mockQuestions[1], 
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[1], categoryId: '671e6e7393cee089f87f1f3d'})
+            },
+            { 
+                ...mockQuestions[2], 
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[2], categoryId: '671e6e7393cee089f87f1f3d'})
+            }
         ];
-        Question.find.mockResolvedValue(mockQuestions);
-        Question.updateMany.mockResolvedValue({ nModified: 2 });
+        Question.updateMany.mockResolvedValue({ nModified: 3 });
         Question.find.mockResolvedValue(updatedQuestions);
 
-        const res = await request(app).patch('/questions/categories/oldCategoryId/newCategoryId');
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');
+        console.log(res.body)
         expect(res.status).toBe(201);
         expect(res.body.message).toBe('CategoryId updated successfully');
         expect(res.body.categories).toEqual(updatedQuestions);
-    });
+    });*/
 
     it('should return 500 error if updating categories fails', async () => {
-        const mockQuestions = [{ categoryId: 'oldCategoryId' }];
-        Question.find.mockResolvedValue(mockQuestions);
         Question.updateMany.mockRejectedValue(new Error('Update failed'));
 
-        const res = await request(app).patch('/questions/categories/oldCategoryId/newCategoryId');
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred while updating CategoryId');
         expect(res.body.error).toBe('Update failed');
-    });*/
+    });
 });
 
 /********/

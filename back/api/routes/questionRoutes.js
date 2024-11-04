@@ -537,8 +537,25 @@ router.post('/csv', upload.single('questions'), async (req, res) => {
 /********/
 
 // Change toutes les id d'une categorie à une autre
-router.patch('/categories/:oldCategoryId/:newCategoryId', async (req, res, next) => {
-    console.log("@@@")
+router.patch('/categories//', async (req, res) =>{
+    return res.status(400).json({ 
+        message: 'An error occurred',
+        error: 'Both oldCategoryId and newCategoryId are required' 
+    });
+});
+router.patch('/categories//:newCategoryId', async (req, res) =>{
+    return res.status(400).json({ 
+        message: 'An error occurred',
+        error: 'Both oldCategoryId and newCategoryId are required' 
+    });
+});
+router.patch('/categories/:oldCategoryId/', async (req, res) =>{
+    return res.status(400).json({ 
+        message: 'An error occurred',
+        error: 'Both oldCategoryId and newCategoryId are required' 
+    });
+});
+router.patch('/categories/:oldCategoryId/:newCategoryId?', async (req, res, next) => {       
     let questions;
     try {
         questions = await Question.find();
@@ -556,24 +573,7 @@ router.patch('/categories/:oldCategoryId/:newCategoryId', async (req, res, next)
     }
     res.questions = questions;
     next();
-}, async (req, res) => {             
-    // Check if oldCategoryId and newCategoryId are not missing
-    if (req.params.oldCategoryId === undefined || req.params.newCategoryId === undefined) {
-        return res.status(400).json({ 
-            message: 'An error occurred',
-            error: 'Both oldCategoryId and newCategoryId are required' 
-        });
-    }
-
-    // Check if oldCategoryId and newCategoryId are valid
-    if (typeof req.params.oldCategoryId !== 'string' || typeof req.params.newCategoryId !== 'string' || 
-        req.params.oldCategoryId.trim() === '' || req.params.newCategoryId.trim() === '') {
-        return res.status(400).json({ 
-            message: 'An error occurred',
-            error: 'oldCategoryId and newCategoryId must be non-empty strings' 
-        });
-    }
-
+}, async (req, res) => {               
     // Check if rest of oldCategoryId and newCategoryId are valid for mongoose
     const invalidParams = {};
 
@@ -600,13 +600,13 @@ router.patch('/categories/:oldCategoryId/:newCategoryId', async (req, res, next)
     }
 
     // Check if oldCategoryId exists in the list of questions
-    const oldCategoryExists = res.questions.some(q => q.categoryId.equals(new mongoose.Types.ObjectId(req.params.oldCategoryId)));
+    const oldCategoryExists = res.questions.some(q => q.categoryId == new mongoose.Types.ObjectId(req.params.oldCategoryId));
     if (!oldCategoryExists) {
         return res.status(400).json({
             message: 'An error occurred',
             error: 'oldCategoryId does not exist in any questions'
         });
-    }
+    } 
 
     // Check if newCategoryId exist somewhere in Categories
     if (!mongoose.Types.ObjectId.isValid(req.params.newCategoryId)) {
@@ -617,8 +617,8 @@ router.patch('/categories/:oldCategoryId/:newCategoryId', async (req, res, next)
                 categoryId: req.params.newCategoryId
             }
         });
-    }
-    
+    } //todo
+ 
     try {
         await Question.updateMany(
             { categoryId: req.params.oldCategoryId }, 
@@ -634,14 +634,14 @@ router.patch('/categories/:oldCategoryId/:newCategoryId', async (req, res, next)
         return res.status(201).json({ 
             message: 'CategoryId updated successfully', 
             categories: updatedCategories
-        });
+        }); // todo
     } catch (error) {
         return res.status(500).json({ 
             message: 'An error occurred while updating CategoryId', 
             error: error.message
         });
     }
-})
+});
 
 // Update question
 router.patch('/:id', async (req, res, next) => {
