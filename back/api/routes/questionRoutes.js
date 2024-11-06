@@ -195,7 +195,7 @@ router.post('/', async (req, res, next) => {
     
     try {
         // Check if categoryId parameters exists in the Category collection
-        const categoryExists = res.categories.some(c =>  c.categoryId.equals(new mongoose.Types.ObjectId(req.body.categoryId)));
+        const categoryExists = res.categories.some(c =>  c.categoryId.toString() === req.body.categoryId);
         if (!categoryExists) {
             return res.status(400).json({
                 message: 'An error occurred',
@@ -351,9 +351,9 @@ router.post('/bulk', async (req, res, next) => {
                 });
             }
 
-            if (!missingParams.includes('categoryId')) {
+            if (!missingParams.includes('categoryId') && !invalidParams.hasOwnProperty('categoryId')) {
                 // Validate categoryId
-                const categoryExists = res.categories.some(c =>  c.categoryId.equals(new mongoose.Types.ObjectId(questionData.categoryId)));
+                const categoryExists = res.categories.some(c =>  c.categoryId.toString() === questionData.categoryId);
                 if (!categoryExists) {
                     errors.push({
                         question: questionData,
@@ -526,7 +526,7 @@ router.post('/csv', upload.single('questions'), async (req, res, next) => {
                         missing: missingParams
                     });
                 }
-
+                
                 if (!missingParams.includes('categoryId')) {
                     // Validate categoryId
                     const categoryExists = res.categories.some(c =>  c.categoryId.equals(new mongoose.Types.ObjectId(questionData.categoryId)));
@@ -666,8 +666,8 @@ router.patch('/categories/:oldCategoryId/:newCategoryId?', async (req, res, next
         });
     }
 
-    // Check if oldCategoryId exists in the list of questions
-    const oldCategoryExists = res.questions.some(q => q.categoryId.equals(new mongoose.Types.ObjectId(req.params.oldCategoryId)));
+    // Check if oldCategoryId exists in the list of questions    
+    const oldCategoryExists = res.questions.some(q => q.categoryId.toString() === req.params.oldCategoryId);
     if (!oldCategoryExists) {
         return res.status(400).json({
             message: 'An error occurred',
@@ -675,8 +675,8 @@ router.patch('/categories/:oldCategoryId/:newCategoryId?', async (req, res, next
         });
     } 
 
-    // Check if newCategoryId exist somewhere in Categories
-    const categoryExists = res.categories.some(c =>  c.categoryId.equals(new mongoose.Types.ObjectId(req.params.newCategoryId)));
+    // Check if newCategoryId exist somewhere in Categories    
+    const categoryExists = res.categories.some(c =>  c.categoryId.toString() === req.params.newCategoryId);
     if (!categoryExists) {
         return res.status(400).json({
             message: 'An error occurred',
@@ -714,12 +714,21 @@ router.patch('/categories/:oldCategoryId/:newCategoryId?', async (req, res, next
 // Update question
 router.patch('/:id', async (req, res, next) => {
     let question;
+    let categories;
     try {
         question = await Question.findById(req.params.id);
         if (question === null) {
             return res.status(404).json({ 
                 message: 'An error occurred',
                 error: 'Question not found'
+            });
+        }
+
+        categories = await Category.find();
+        if (categories === null) {
+            return res.status(404).json({ 
+                message: 'An error occurred',
+                error: 'Category not found'
             });
         }
     } catch (err) {
@@ -729,6 +738,7 @@ router.patch('/:id', async (req, res, next) => {
         });
     }
     res.question = question;
+    res.categories = categories;
     next();
 }, async (req, res) => {    
     let updated = false; // Check if any field was updated
@@ -843,9 +853,9 @@ router.patch('/:id', async (req, res, next) => {
         }
     
         // Check categoryId parameter if provided
-        if (req.body.categoryId !== undefined && req.body.categoryId !== null) {        
+        if (req.body.categoryId !== undefined && req.body.categoryId !== null) {   
             // Validate categoryId
-            const categoryExists = res.categories.some(c =>  c.categoryId.equals(new mongoose.Types.ObjectId(req.body.categoryId)));
+            const categoryExists = res.categories.some(c =>  c.categoryId.toString() === req.body.categoryId);
             if (!categoryExists) {
                 return res.status(400).json({
                     message: 'An error occurred',
@@ -855,9 +865,8 @@ router.patch('/:id', async (req, res, next) => {
                     }
                 });
             }        
-
             // Check if categoryId parameter was updated
-            if (req.body.categoryId !== res.question.categoryId) {    
+            if (req.body.categoryId !== res.question.categoryId.toString()) {    
                 res.question.categoryId = req.body.categoryId;
                 updated = true;
             }        

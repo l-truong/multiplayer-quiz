@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const request = require('supertest'); // Import supertest for HTTP testing
 const express = require('express'); // Import express
 const router = require('../../api/routes/categoryRoutes'); // Import category routes
@@ -11,8 +12,8 @@ app.use('/categories', router); // Use category routes
 const headers = ['name', 'description', 'language'];
 const enumLanguage = ['eng', 'fr'];
 const mockCategories = [{
-    _id: '6702a8418357fa576c95ea44',
-    categoryId: '6702a8418357fa576c95ea43',
+    _id: new mongoose.Types.ObjectId('6702a8418357fa576c95ea44'),
+    categoryId: new mongoose.Types.ObjectId('6702a8418357fa576c95ea43'),
     name: 'Test Category name',
     description: 'Test Category description',
     language: 'eng',
@@ -41,6 +42,48 @@ afterEach(() => {
 
 
 /********/
+/* FUNCTIONS */
+/********/
+
+function convertObjectIdsToStrings(arr) {
+    return arr.map(item => {
+        const newItem = { ...item };  
+        // If the value is an instance of ObjectId, convert it to a string
+        for (let key in newItem) {
+            if (newItem[key] instanceof mongoose.Types.ObjectId) {
+            newItem[key] = newItem[key].toString();
+            }
+        }  
+        return newItem;
+    });
+}
+
+function convertObjectIdsToStringsInObject(obj) {
+    const newObj = { ...obj };  
+    for (let key in newObj) {
+        // If the value is an instance of ObjectId, convert it to a string
+        if (newObj[key] instanceof mongoose.Types.ObjectId) {
+            newObj[key] = newObj[key].toString();
+        }
+    }  
+    return newObj;
+}
+
+function convertObjectIdToString(value) {
+    // If the value is an instance of ObjectId, convert it to a string
+    return value instanceof mongoose.Types.ObjectId ? value.toString() : value;
+}
+
+function arrayToCustomCsvBuffer(data) {
+    const rows = data.map((row) => {
+        return headers.map(header => {           
+            return row[header] || '';
+        }).join(';');
+    });
+    return Buffer.from([headers.join(';'), ...rows].join('\n'));
+}
+
+/********/
 /* GET */
 /********/
 
@@ -49,7 +92,7 @@ describe('GET /categories', () => {
     it('should return all categories', async () => {
         const res = await request(app).get('/categories');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual(mockCategories);
+        expect(res.body).toEqual(convertObjectIdsToStrings(mockCategories));
     });
 
     it('should return 500 error on server failure', async () => {
@@ -65,7 +108,7 @@ describe('GET /categories', () => {
 describe('GET /categories/:id', () => {
     it('should return 404 error if category not found', async () => {
         Category.findById.mockResolvedValue(null);
-        const res = await request(app).get(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).get(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -73,7 +116,7 @@ describe('GET /categories/:id', () => {
 
     it('should return 500 error if findById fails', async () => {
         Category.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).get(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).get(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
@@ -81,9 +124,9 @@ describe('GET /categories/:id', () => {
 
     it('should return a category by ID', async () => {
         Category.findById.mockResolvedValue(mockCategories[0]);
-        const res = await request(app).get(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).get(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(200);
-        expect(res.body).toEqual(mockCategories[0]);
+        expect(res.body).toEqual(convertObjectIdsToStringsInObject(mockCategories[0]));
     });
 });
 
@@ -373,15 +416,6 @@ describe('POST /categories/bulk', () => {
     });
 });
 
-function arrayToCustomCsvBuffer(data) {
-    const rows = data.map((row) => {
-        return headers.map(header => {           
-            return row[header] || '';
-        }).join(';');
-    });
-    return Buffer.from([headers.join(';'), ...rows].join('\n'));
-}
-
 describe('POST /categories/csv', () => {
     it('should return 400 error if missing categories parameter or empty', async () => {
         const csvBufferMissing = Buffer.from('');
@@ -544,7 +578,7 @@ describe('POST /categories/csv', () => {
 describe('PATCH /categories/:id', () => {
     it('should return 404 if category not found', async () => {
         Category.findById.mockResolvedValue(null);
-        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Name' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 'Updated Name' });
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -552,7 +586,7 @@ describe('PATCH /categories/:id', () => {
 
     it('should return 500 error if findById fails', async () => {
         Category.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Name' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 'Updated Name' });
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
@@ -562,25 +596,25 @@ describe('PATCH /categories/:id', () => {
         const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
 
-        const resNameNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 0 });
+        const resNameNotString = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 0 });
         expect(resNameNotString.status).toBe(400);
         expect(resNameNotString.body.message).toBe('An error occurred');
         expect(resNameNotString.body.error).toBe('Parameters must be strings');
         expect(resNameNotString.body.invalidParams).toEqual({ name: 0 });
 
-        const resDescriptionNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ description: 1 });
+        const resDescriptionNotString = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ description: 1 });
         expect(resDescriptionNotString.status).toBe(400);
         expect(resDescriptionNotString.body.message).toBe('An error occurred');
         expect(resDescriptionNotString.body.error).toBe('Parameters must be strings');
         expect(resDescriptionNotString.body.invalidParams).toEqual({ description: 1 });
 
-        const resLanguageNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ language: 2 });
+        const resLanguageNotString = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ language: 2 });
         expect(resLanguageNotString.status).toBe(400);
         expect(resLanguageNotString.body.message).toBe('An error occurred');
         expect(resLanguageNotString.body.error).toBe('Parameters must be strings');
         expect(resLanguageNotString.body.invalidParams).toEqual({ language: 2 });
 
-        const resAllParametersNotString = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 0, description: 1, language: 2 });
+        const resAllParametersNotString = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 0, description: 1, language: 2 });
         expect(resAllParametersNotString.status).toBe(400);
         expect(resAllParametersNotString.body.message).toBe('An error occurred');
         expect(resAllParametersNotString.body.error).toBe('Parameters must be strings');
@@ -590,7 +624,7 @@ describe('PATCH /categories/:id', () => {
     it('should return 400 res if parameter language incorrect', async () => {
         const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ language: 'Not a language' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ language: 'Not a language' });
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Language must be part of [' + enumLanguage + ']');
@@ -600,7 +634,7 @@ describe('PATCH /categories/:id', () => {
     it('should return 200 res if no fields were updated', async () => {
         const categoryToUpdate = { ...mockCategories[0], save: jest.fn().mockResolvedValue(mockCategories[0]) };
         Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Test Category name', description: 'Test Category description', language: 'eng' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 'Test Category name', description: 'Test Category description', language: 'eng' });
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('No fields were updated');
     });
@@ -611,7 +645,7 @@ describe('PATCH /categories/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockCategories[0], name: 'Updated Category name'})
         };
         Category.findById.mockResolvedValue(updatedCategoryName);
-        const resUpdateName = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category name' });
+        const resUpdateName = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 'Updated Category name' });
         expect(resUpdateName.status).toBe(200);
         expect(resUpdateName.body.name).toBe('Updated Category name');
         expect(updatedCategoryName.save).toHaveBeenCalled();
@@ -621,7 +655,7 @@ describe('PATCH /categories/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockCategories[0], description: 'Updated Category description'})
         };
         Category.findById.mockResolvedValue(updatedCategoryDescription);
-        const resUpdateDescription = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ description: 'Updated Category description' });
+        const resUpdateDescription = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ description: 'Updated Category description' });
         expect(resUpdateDescription.status).toBe(200);
         expect(resUpdateDescription.body.description).toBe('Updated Category description');
         expect(updatedCategoryDescription.save).toHaveBeenCalled();
@@ -631,7 +665,7 @@ describe('PATCH /categories/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockCategories[0], language: 'fr'})
         };
         Category.findById.mockResolvedValue(updatedCategoryLanguage);
-        const resUpdateLanguage = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ language: 'fr' });
+        const resUpdateLanguage = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ language: 'fr' });
         expect(resUpdateLanguage.status).toBe(200);
         expect(resUpdateLanguage.body.language).toBe('fr');
         expect(updatedCategoryLanguage.save).toHaveBeenCalled();
@@ -641,7 +675,7 @@ describe('PATCH /categories/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockCategories[0], name: 'Updated Category name', description: 'Updated Category description', language: 'fr'})
         };
         Category.findById.mockResolvedValue(updatedCategoryAll);
-        const resUpdateAll = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category name', description: 'Updated Category description', language: 'fr' });
+        const resUpdateAll = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 'Updated Category name', description: 'Updated Category description', language: 'fr' });
         expect(resUpdateAll.status).toBe(200);        
         expect(resUpdateAll.body.name).toBe('Updated Category name');
         expect(resUpdateAll.body.description).toBe('Updated Category description');
@@ -655,7 +689,7 @@ describe('PATCH /categories/:id', () => {
             save: jest.fn().mockRejectedValue(new Error('Save failed'))
         };
         Category.findById.mockResolvedValue(categoryToUpdate);
-        const res = await request(app).patch(`/categories/${mockCategories[0]._id}`).send({ name: 'Updated Category Name' });
+        const res = await request(app).patch(`/categories/${mockCategories[0]._id.toString()}`).send({ name: 'Updated Category Name' });
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Save failed');
@@ -693,7 +727,7 @@ describe('DELETE /categories/all', () => {
 describe('DELETE /categories/:id', () => {
     it('should return 404 error if category not found', async () => {
         Category.findById.mockResolvedValue(null);
-        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -701,7 +735,7 @@ describe('DELETE /categories/:id', () => {
 
     it('should return a 500 error if finding category fails', async () => {
         Category.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
@@ -710,7 +744,7 @@ describe('DELETE /categories/:id', () => {
     it('should return 404 if category not found during delete', async () => {
         Category.findById.mockResolvedValue(mockCategories[0]);
         Category.findByIdAndDelete.mockResolvedValue(null);
-        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Category not found');
@@ -719,7 +753,7 @@ describe('DELETE /categories/:id', () => {
     it('should delete a category by ID', async () => {
         Category.findById.mockResolvedValue(mockCategories[0]);
         Category.findByIdAndDelete.mockResolvedValue(mockCategories[0]);
-        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('Category deleted');
     });
@@ -727,7 +761,7 @@ describe('DELETE /categories/:id', () => {
     it('should return a 500 error if delete fails', async () => {
         Category.findById.mockResolvedValue(mockCategories[0]);
         Category.findByIdAndDelete.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/categories/${mockCategories[0]._id}`);
+        const res = await request(app).delete(`/categories/${mockCategories[0]._id.toString()}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');

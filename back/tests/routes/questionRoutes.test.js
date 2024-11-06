@@ -14,7 +14,7 @@ app.use('/questions', router); // Use question routes
 const headers = ['questionText', 'options', 'correctAnswer', 'explanation', 'categoryId'];
 const mockCategories = [
     {
-        _id: '6702a8418357fa576c95ea44',
+        _id: new mongoose.Types.ObjectId('6702a8418357fa576c95ea44'),
         categoryId: new mongoose.Types.ObjectId('6702a8418357fa576c95ea43'),
         name: 'Test Category name',
         description: 'Test Category description',
@@ -24,7 +24,7 @@ const mockCategories = [
         __v: 0,
     },
     {
-        _id: '671e6e7393cee089f87f1f3e',
+        _id: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3e'),
         categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
         name: 'Test Category name 2',
         description: 'Test Category description 2',
@@ -37,8 +37,8 @@ const mockCategories = [
 
 const mockQuestions = [
     {
-        _id: '6702afae2acce6212ee86085',
-        questionId: '6702afae2acce6212ee86084',
+        _id: new mongoose.Types.ObjectId('6702afae2acce6212ee86085'),
+        questionId: new mongoose.Types.ObjectId('6702afae2acce6212ee86084'),
         questionText: 'Test Question 1',
         options: [            
             'answer 1',
@@ -48,14 +48,14 @@ const mockQuestions = [
         ],
         correctAnswer: 'answer 1',
         explanation: 'explanation 1',
-        categoryId: '6702a8418357fa576c95ea43',
+        categoryId: new mongoose.Types.ObjectId('6702a8418357fa576c95ea43'),
         createdAt: '2024-10-06T15:41:34.691Z',
         updatedAt: '2024-10-06T15:41:34.691Z',
         __v: 0
     },
     {
-        _id: '6702af9f2acce6212ee8607f',
-        questionId: '6702af9f2acce6212ee8607e',
+        _id: new mongoose.Types.ObjectId('6702af9f2acce6212ee8607f'),
+        questionId: new mongoose.Types.ObjectId('6702af9f2acce6212ee8607e'),
         questionText: 'Test Question 2',
         options: [            
             'answer 21',
@@ -65,14 +65,14 @@ const mockQuestions = [
         ],
         correctAnswer: 'answer 21',
         explanation: 'explanation 2',
-        categoryId: '6702a8418357fa576c95ea43',
+        categoryId: new mongoose.Types.ObjectId('6702a8418357fa576c95ea43'),
         createdAt: '2024-10-06T15:41:19.223Z',
         updatedAt: '2024-10-06T15:41:19.223Z',
         __v: 0
     },
     {
-        _id: '6702af982acce6212ee8607c',
-        questionId: '6702af982acce6212ee8607b',
+        _id: new mongoose.Types.ObjectId('6702af982acce6212ee8607c'),
+        questionId: new mongoose.Types.ObjectId('6702af982acce6212ee8607b'),
         questionText: 'Test Question 3',
         options: [
             'answer 31',
@@ -82,7 +82,7 @@ const mockQuestions = [
         ],
         correctAnswer: 'answer 31',
         explanation: 'explanation 3',
-        categoryId: '6702a8418357fa576c95ea43',
+        categoryId: new mongoose.Types.ObjectId('6702a8418357fa576c95ea43'),
         createdAt: '2024-10-06T15:41:12.558Z',
         updatedAt: '2024-10-06T15:41:12.558Z',
         __v: 0
@@ -109,6 +109,59 @@ afterEach(() => {
 
 
 /********/
+/* FUNCTIONS */
+/********/
+
+function convertObjectIdsToStrings(arr) {
+    return arr.map(item => {
+        const newItem = { ...item };  
+        // If the value is an instance of ObjectId, convert it to a string
+        for (let key in newItem) {
+            if (newItem[key] instanceof mongoose.Types.ObjectId) {
+            newItem[key] = newItem[key].toString();
+            }
+        }  
+        return newItem;
+    });
+}
+
+function convertObjectIdsToStringsInObject(obj) {
+    const newObj = { ...obj };  
+    for (let key in newObj) {
+        // If the value is an instance of ObjectId, convert it to a string
+        if (newObj[key] instanceof mongoose.Types.ObjectId) {
+            newObj[key] = newObj[key].toString();
+        }
+    }  
+    return newObj;
+}
+
+function convertObjectIdToString(value) {
+    // If the value is an instance of ObjectId, convert it to a string
+    return value instanceof mongoose.Types.ObjectId ? value.toString() : value;
+}
+
+function arrayToCustomCsvBuffer(data) {
+    const rows = data.map((row) => {
+        return headers.map(header => {
+            if (header === 'options') {
+                const str = Array.isArray(row[header])
+                    ? row[header]
+                        .map(option => option === null ? '' : option) 
+                        .join(',') 
+                    : '';
+                return `[${str}]`;
+            } else {
+                return row[header] || '';
+            }
+        }).join(';');
+    });
+
+    return Buffer.from([headers.join(';'), ...rows].join('\n'));
+}
+
+
+/********/
 /* GET */
 /********/
 
@@ -117,7 +170,7 @@ describe('GET /questions', () => {
     it('should return all questions', async () => {
         const res = await request(app).get('/questions');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual(mockQuestions);
+        expect(res.body).toEqual(convertObjectIdsToStrings(mockQuestions));
     });
 
     it('should return 500 error on server failure', async () => {
@@ -161,7 +214,7 @@ describe('GET /questions/random/:random', () => {
         expect(res.status).toBe(200);
         expect(res.body).toHaveLength(length);
         expect(res.body.every(question => 
-            mockQuestions.some(mockQuestion => mockQuestion._id === question._id)
+            mockQuestions.some(mockQuestion => convertObjectIdToString(mockQuestion._id) === question._id)
         )).toBe(true);
     });
 
@@ -179,7 +232,7 @@ describe('GET /questions/random/:random', () => {
 describe('GET /questions/:id', () => {
     it('should return 404 error if question not found', async () => {
         Question.findById.mockResolvedValue(null);
-        const res = await request(app).get(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).get(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Question not found');
@@ -187,7 +240,7 @@ describe('GET /questions/:id', () => {
 
     it('should return 500 error if findById fails', async () => {
         Question.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).get(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).get(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
@@ -195,9 +248,9 @@ describe('GET /questions/:id', () => {
 
     it('should return a question by ID', async () => {
         Question.findById.mockResolvedValue(mockQuestions[0]);
-        const res = await request(app).get(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).get(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(200);
-        expect(res.body).toEqual(mockQuestions[0]);
+        expect(res.body).toEqual(convertObjectIdsToStringsInObject(mockQuestions[0]));
     });
 });
 
@@ -408,6 +461,37 @@ describe('POST /questions', () => {
         expect(res.body).toEqual(newQuestion);
     });
 
+    it('should return 404 error if Category not found', async () => {
+        Category.find.mockResolvedValue(null);
+        const newQuestion = {
+            questionText: 'Question text',
+            options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
+            correctAnswer: 'answer 1',
+            explanation: 'explanation',
+            categoryId: '6702a8418357fa576c95ea43'
+        };
+        Question.prototype.save.mockResolvedValue(newQuestion);
+        const res = await request(app).post('/questions').send(newQuestion);expect(res.status).toBe(404);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Category not found');
+    });
+
+    it('should return 500 error if Category not found', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const newQuestion = {
+            questionText: 'Question text',
+            options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
+            correctAnswer: 'answer 1',
+            explanation: 'explanation',
+            categoryId: '6702a8418357fa576c95ea43'
+        };
+        Question.prototype.save.mockResolvedValue(newQuestion);
+        const res = await request(app).post('/questions').send(newQuestion);expect(res.status).toBe(500);
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
     it('should return 500 error if save fails', async () => {
         const newQuestion = {
             questionText: 'Question text',
@@ -443,9 +527,9 @@ describe('POST /questions/bulk', () => {
 
     it('should return 400 error if missing questions', async () => {
         const newQuestions = [
-            { options: ['answer 11', 'answer 12', 'answer 13', 'answer 14'], correctAnswer: 'answer 11', categoryId: '605c72c1e4b0a62d24356473' },
-            { questionText: 'Question text 2', correctAnswer: 'answer 22', categoryId: '605c72c1e4b0a62d24356473' },
-            { questionText: 'Question text 3', options: ['answer 31', 'answer 32', 'answer 33', 'answer 34'], categoryId: '605c72c1e4b0a62d24356473' },
+            { options: ['answer 11', 'answer 12', 'answer 13', 'answer 14'], correctAnswer: 'answer 11', categoryId: '6702a8418357fa576c95ea43' },
+            { questionText: 'Question text 2', correctAnswer: 'answer 22', categoryId: '6702a8418357fa576c95ea43' },
+            { questionText: 'Question text 3', options: ['answer 31', 'answer 32', 'answer 33', 'answer 34'], categoryId: '6702a8418357fa576c95ea43' },
             { questionText: 'Question text 4', options: ['answer 41', 'answer 42', 'answer 43', 'answer 44'], correctAnswer: 'answer 44' },
             { questionText: 'Question text 5', explanation: 'explanation' },
             {}
@@ -482,12 +566,11 @@ describe('POST /questions/bulk', () => {
         expect(mockSession.endSession).toHaveBeenCalled();
     });
 
-
     it('should return 400 error if parameters are not strings', async () => {
         const newQuestions = [
-            { questionText: 0, options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 'answer 1', explanation: 'explanation', categoryId: '605c72c1e4b0a62d24356473' },
-            { questionText: 'Question text 2', options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 1, explanation: 'explanation', categoryId: '605c72c1e4b0a62d24356473' },
-            { questionText: 'Question text 3', options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 'answer 1', explanation: 2, categoryId: '605c72c1e4b0a62d24356473' },            
+            { questionText: 0, options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 'answer 1', explanation: 'explanation', categoryId: '6702a8418357fa576c95ea43' },
+            { questionText: 'Question text 2', options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 1, explanation: 'explanation', categoryId: '6702a8418357fa576c95ea43' },
+            { questionText: 'Question text 3', options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 'answer 1', explanation: 2, categoryId: '6702a8418357fa576c95ea43' },            
             { questionText: 'Question text 3', options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 'answer 1', explanation: 'explanation', categoryId: 3 },
             { questionText: 4, options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], correctAnswer: 5, explanation: 6, categoryId: 7 },
         ];
@@ -603,7 +686,7 @@ describe('POST /questions/bulk', () => {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
                 correctAnswer: 'answer 1',
-                categoryId: 'categoryIdNotExisting'
+                categoryId: '6702a8418357fa576c95ea44'
             }
         ];        
         Category.findById.mockResolvedValue(null); 
@@ -622,7 +705,7 @@ describe('POST /questions/bulk', () => {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
                 correctAnswer: 'answer 1',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];
         Question.prototype.save.mockResolvedValue(newQuestions[0]);
@@ -633,13 +716,47 @@ describe('POST /questions/bulk', () => {
         expect(res.body.questions).toEqual(expect.arrayContaining([newQuestions[0]]));
     });
 
+    it('should return 404 error if Category not found', async () => {
+        Category.find.mockResolvedValue(null);
+        const newQuestions = [
+            {
+                questionText: 'Question text',
+                options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
+                correctAnswer: 'answer 1',
+                categoryId: '6702a8418357fa576c95ea43'
+            }
+        ];
+        Question.prototype.save.mockResolvedValue(newQuestions[0]);
+        const res = await request(app).post('/questions/bulk').send({ questions: newQuestions });
+        expect(res.status).toBe(404);        
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Category not found');
+    });
+
+    it('should return 500 error if Category not found', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const newQuestions = [
+            {
+                questionText: 'Question text',
+                options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
+                correctAnswer: 'answer 1',
+                categoryId: '6702a8418357fa576c95ea43'
+            }
+        ];
+        Question.prototype.save.mockResolvedValue(newQuestions[0]);
+        const res = await request(app).post('/questions/bulk').send({ questions: newQuestions });
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
     it('should return 500 error if save fails', async () => {
         const newQuestions = [
             {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
                 correctAnswer: 'answer 1',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];
         Question.prototype.save.mockRejectedValue(new Error('Database error'));
@@ -650,25 +767,6 @@ describe('POST /questions/bulk', () => {
         expect(res.body.error).toBe('Database error');
     });
 });
-
-function arrayToCustomCsvBuffer(data) {
-    const rows = data.map((row) => {
-        return headers.map(header => {
-            if (header === 'options') {
-                const str = Array.isArray(row[header])
-                    ? row[header]
-                        .map(option => option === null ? '' : option) 
-                        .join(',') 
-                    : '';
-                return `[${str}]`;
-            } else {
-                return row[header] || '';
-            }
-        }).join(';');
-    });
-
-    return Buffer.from([headers.join(';'), ...rows].join('\n'));
-}
 
 describe('POST /questions/csv', () => {
     it('should return 400 error if missing questions parameter or empty', async () => {
@@ -687,9 +785,9 @@ describe('POST /questions/csv', () => {
 
     it('should return 400 error if missing parameters', async () => {
         const newQuestions = [
-            { options: ['answer 11', 'answer 12', 'answer 13', 'answer 14'], correctAnswer: 'answer 11', categoryId: '605c72c1e4b0a62d24356473' },
-            { questionText: 'Question text 2', correctAnswer: 'answer 22', categoryId: '605c72c1e4b0a62d24356473' },
-            { questionText: 'Question text 3', options: ['answer 31', 'answer 32', 'answer 33', 'answer 34'], categoryId: '605c72c1e4b0a62d24356473' },
+            { options: ['answer 11', 'answer 12', 'answer 13', 'answer 14'], correctAnswer: 'answer 11', categoryId: '6702a8418357fa576c95ea43' },
+            { questionText: 'Question text 2', correctAnswer: 'answer 22', categoryId: '6702a8418357fa576c95ea43' },
+            { questionText: 'Question text 3', options: ['answer 31', 'answer 32', 'answer 33', 'answer 34'], categoryId: '6702a8418357fa576c95ea43' },
             { questionText: 'Question text 4', options: ['answer 41', 'answer 42', 'answer 43', 'answer 44'], correctAnswer: 'answer 44' },
             { questionText: 'Question text 5', explanation: 'explanation' },
             {}          
@@ -732,7 +830,7 @@ describe('POST /questions/csv', () => {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2'],
                 correctAnswer: 'answer 1',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];                
         Question.prototype.save.mockResolvedValue(newQuestions);
@@ -751,7 +849,7 @@ describe('POST /questions/csv', () => {
                 questionText: 'Question text',
                 options: ['answer 1', '', 'answer 3', ''],
                 correctAnswer: 'answer 1',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];        
         Question.prototype.save.mockResolvedValue(newQuestions);
@@ -770,7 +868,7 @@ describe('POST /questions/csv', () => {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 3'],
                 correctAnswer: 'answer 1',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];
         Question.prototype.save.mockResolvedValue(newQuestions);
@@ -789,7 +887,7 @@ describe('POST /questions/csv', () => {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
                 correctAnswer: 'answer 0',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];
         Question.prototype.save.mockResolvedValue(newQuestions);
@@ -808,7 +906,7 @@ describe('POST /questions/csv', () => {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
                 correctAnswer: 'answer 1',
-                categoryId: 'categoryIdNotExisting'
+                categoryId: '6702a8418357fa576c95ea44'
             }
         ];        
         Category.findById.mockResolvedValue(null); 
@@ -818,7 +916,7 @@ describe('POST /questions/csv', () => {
         expect(res.body.message).toBe('Some questions could not be processed');
         expect(res.body.errors[0].error).toBe('Invalid categoryId. Category does not exist');
         expect(res.body.errors[0].question).toMatchObject(newQuestions[0]);
-        expect(res.body.errors[0].invalidParams.categoryId).toBe('categoryIdNotExisting');
+        expect(res.body.errors[0].invalidParams.categoryId).toBe('6702a8418357fa576c95ea44');
     });
 
     it('should create questions successfully', async () => {
@@ -838,13 +936,49 @@ describe('POST /questions/csv', () => {
         expect(res.body.questions).toEqual(expect.arrayContaining([newQuestions[0]]));
     });
 
+    it('should return 404 error if Category not found', async () => {
+        Category.find.mockResolvedValue(null);
+        const newQuestions = [
+            {
+                questionText: 'Question text',
+                options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
+                correctAnswer: 'answer 1',
+                categoryId: '6702a8418357fa576c95ea43'
+            }
+        ];
+        Question.prototype.save.mockResolvedValue(newQuestions[0]);
+
+        const res = await request(app).post('/questions/csv').attach('questions', arrayToCustomCsvBuffer(newQuestions) , 'questions.csv');
+        expect(res.status).toBe(404);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Category not found');
+    });
+
+    it('should return 500 error if Category not found', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const newQuestions = [
+            {
+                questionText: 'Question text',
+                options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
+                correctAnswer: 'answer 1',
+                categoryId: '6702a8418357fa576c95ea43'
+            }
+        ];
+        Question.prototype.save.mockResolvedValue(newQuestions[0]);
+
+        const res = await request(app).post('/questions/csv').attach('questions', arrayToCustomCsvBuffer(newQuestions) , 'questions.csv');
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
     it('should return 500 error if save fails', async () => {
         const newQuestions = [
             {
                 questionText: 'Question text',
                 options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'],
                 correctAnswer: 'answer 1',
-                categoryId: '605c72c1e4b0a62d24356473'
+                categoryId: '6702a8418357fa576c95ea43'
             }
         ];
         Question.prototype.save.mockRejectedValue(new Error('Database error'));
@@ -872,7 +1006,7 @@ describe('POST /questions/csv', () => {
 describe('PATCH /questions/:id', () => {
     it('should return 404 if question not found', async () => {
         Question.findById.mockResolvedValue(null);
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ questionText: 'Updated Question Text' });
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ questionText: 'Updated Question Text' });
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Question not found');
@@ -880,7 +1014,7 @@ describe('PATCH /questions/:id', () => {
 
     it('should return 500 error if findById fails', async () => {
         Question.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ questionText: 'Updated Question Text' });
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ questionText: 'Updated Question Text' });
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
@@ -890,12 +1024,12 @@ describe('PATCH /questions/:id', () => {
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };
         Question.findById.mockResolvedValue(questionToUpdate);
 
-        const resEmpty = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ options: [] });                                    
+        const resEmpty = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ options: [] });                                    
         expect(resEmpty.status).toBe(400);
         expect(resEmpty.body.message).toBe('An error occurred');
         expect(resEmpty.body.error).toBe('Options must be an array of exactly 4 elements');
 
-        const resLessThanFour = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ options: ['answer 1', 'answer 2'] });                                    
+        const resLessThanFour = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ options: ['answer 1', 'answer 2'] });                                    
         expect(resLessThanFour.status).toBe(400);
         expect(resLessThanFour.body.message).toBe('An error occurred');
         expect(resLessThanFour.body.error).toBe('Options must be an array of exactly 4 elements');
@@ -905,7 +1039,7 @@ describe('PATCH /questions/:id', () => {
     it('should return 400 error if null or empty elements in options parameter', async () => {
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };
         Question.findById.mockResolvedValue(questionToUpdate);
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ options: ['answer 1', '', 'answer 3', null] });                                    
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ options: ['answer 1', '', 'answer 3', null] });                                    
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Options cannot contain null or empty elements');
@@ -915,7 +1049,7 @@ describe('PATCH /questions/:id', () => {
     it('should return 400 error if duplicates in options parameter', async () => {
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };
         Question.findById.mockResolvedValue(questionToUpdate);
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ options: ['answer 1', 'answer 2', 'answer 3', 'answer 3'] });                                    
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ options: ['answer 1', 'answer 2', 'answer 3', 'answer 3'] });                                    
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Options must be unique');
@@ -926,21 +1060,21 @@ describe('PATCH /questions/:id', () => {
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };
         Question.findById.mockResolvedValue(questionToUpdate);
 
-        const resOnlyOptions = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ options: ['answer a', 'answer b', 'answer c', 'answer d'] });             
+        const resOnlyOptions = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ options: ['answer a', 'answer b', 'answer c', 'answer d'] });             
         expect(resOnlyOptions.status).toBe(400);
         expect(resOnlyOptions.body.message).toBe('An error occurred');
         expect(resOnlyOptions.body.error).toBe('Correct answer must be one of the options');
         expect(resOnlyOptions.body.invalidParams.options).toEqual(['answer a', 'answer b', 'answer c', 'answer d']);
         expect(resOnlyOptions.body.invalidParams.correctAnswer).toEqual(mockQuestions[0].correctAnswer);
         
-        const resOnlyCorrectAnswer = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ correctAnswer: 'notCorrect' });                     
+        const resOnlyCorrectAnswer = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ correctAnswer: 'notCorrect' });                     
         expect(resOnlyCorrectAnswer.status).toBe(400);
         expect(resOnlyCorrectAnswer.body.message).toBe('An error occurred');
         expect(resOnlyCorrectAnswer.body.error).toBe('Correct answer must be one of the options');
         expect(resOnlyCorrectAnswer.body.invalidParams.options).toEqual(mockQuestions[0].options);
         expect(resOnlyCorrectAnswer.body.invalidParams.correctAnswer).toEqual('notCorrect');
 
-        const resBothParameters = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ options: ['answer a', 'answer b', 'answer c', 'answer d'], correctAnswer: 'notCorrect' });             
+        const resBothParameters = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ options: ['answer a', 'answer b', 'answer c', 'answer d'], correctAnswer: 'notCorrect' });             
         expect(resBothParameters.status).toBe(400);
         expect(resBothParameters.body.message).toBe('An error occurred');
         expect(resBothParameters.body.error).toBe('Correct answer must be one of the options');
@@ -952,53 +1086,59 @@ describe('PATCH /questions/:id', () => {
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };
         Question.findById.mockResolvedValue(questionToUpdate);
 
-        const resQuestionTextNotString = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ questionText: 0 });
+        const resQuestionTextNotString = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ questionText: 0 });
         expect(resQuestionTextNotString.status).toBe(400);
         expect(resQuestionTextNotString.body.message).toBe('An error occurred');
         expect(resQuestionTextNotString.body.error).toBe('Parameters must be strings');
         expect(resQuestionTextNotString.body.invalidParams).toEqual({ questionText: 0 });
 
-        const resCorrectAnswerNotString = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ correctAnswer: 1 });
+        const resCorrectAnswerNotString = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ correctAnswer: 1 });
         expect(resCorrectAnswerNotString.status).toBe(400);
         expect(resCorrectAnswerNotString.body.message).toBe('An error occurred');
         expect(resCorrectAnswerNotString.body.error).toBe('Parameters must be strings');
         expect(resCorrectAnswerNotString.body.invalidParams).toEqual({ correctAnswer: 1 });
 
-        const resExplanationNotString = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ explanation: 2 });
+        const resExplanationNotString = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ explanation: 2 });
         expect(resExplanationNotString.status).toBe(400);
         expect(resExplanationNotString.body.message).toBe('An error occurred');
         expect(resExplanationNotString.body.error).toBe('Parameters must be strings');
         expect(resExplanationNotString.body.invalidParams).toEqual({ explanation: 2 });
 
-        const resCategoryIdNotString = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ categoryId: 3 });
+        const resCategoryIdNotString = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ categoryId: 3 });
         expect(resCategoryIdNotString.status).toBe(400);
         expect(resCategoryIdNotString.body.message).toBe('An error occurred');
         expect(resCategoryIdNotString.body.error).toBe('Parameters must be strings');
         expect(resCategoryIdNotString.body.invalidParams).toEqual({ categoryId: 3 });
 
-        const resAllParametersNotString = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ questionText: 0, correctAnswer: 1, explanation: 2, categoryId: 3 });
+        const resAllParametersNotString = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ questionText: 0, correctAnswer: 1, explanation: 2, categoryId: 3 });
         expect(resAllParametersNotString.status).toBe(400);
         expect(resAllParametersNotString.body.message).toBe('An error occurred');
         expect(resAllParametersNotString.body.error).toBe('Parameters must be strings');
         expect(resAllParametersNotString.body.invalidParams).toEqual({ questionText: 0, correctAnswer: 1, explanation: 2, categoryId: 3 });
-    }); 
+    });
 
     it('should return 400 if categoryId does not exist in the Category collection', async () => {               
         Category.findById.mockResolvedValue(null);
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };
         Question.findById.mockResolvedValue(questionToUpdate);
 
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ categoryId: 'categoryIdNotExisting' });
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ categoryId: '6702a8418357fa576c95ea44' });
         expect(res.status).toBe(400);        
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Invalid categoryId. Category does not exist');
-        expect(res.body.invalidParams.categoryId).toBe('categoryIdNotExisting');
+        expect(res.body.invalidParams.categoryId).toBe('6702a8418357fa576c95ea44');
     });
     
     it('should return 200 res if no fields were updated', async () => {                  
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockResolvedValue(mockQuestions[0]) };          
         Question.findById.mockResolvedValue(questionToUpdate);  
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send(mockQuestions[0]);
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ 
+            questionText: mockQuestions[0].questionText,
+            options: mockQuestions[0].options,
+            correctAnswer: mockQuestions[0].correctAnswer,
+            explanation:  mockQuestions[0].explanation,
+            categoryId: mockQuestions[0].categoryId.toString()            
+        });
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('No fields were updated');
     });
@@ -1009,7 +1149,7 @@ describe('PATCH /questions/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockQuestions[0], questionText: 'Updated Question Text'})
         };     
         Question.findById.mockResolvedValue(updatedQuestionText);
-        const resUpdateQuestionText = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ questionText: 'Updated Question Text' });
+        const resUpdateQuestionText = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ questionText: 'Updated Question Text' });
         expect(resUpdateQuestionText.status).toBe(200);
         expect(resUpdateQuestionText.body.questionText).toBe('Updated Question Text');
         expect(updatedQuestionText.save).toHaveBeenCalled();
@@ -1019,7 +1159,7 @@ describe('PATCH /questions/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockQuestions[0], correctAnswer: mockQuestions[0].options[3]})
         };
         Question.findById.mockResolvedValue(updatedCorrectAnswer);   
-        const resUpdateCorrectAnswer = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ correctAnswer: mockQuestions[0].options[3] });  
+        const resUpdateCorrectAnswer = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ correctAnswer: mockQuestions[0].options[3] });  
         expect(resUpdateCorrectAnswer.status).toBe(200); 
         expect(resUpdateCorrectAnswer.body.correctAnswer).toBe(mockQuestions[0].options[3]);
         expect(updatedCorrectAnswer.save).toHaveBeenCalled();
@@ -1029,7 +1169,7 @@ describe('PATCH /questions/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockQuestions[0], explanation: 'explanation'})
         };
         Question.findById.mockResolvedValue(updatedExplanation);        
-        const resExplanation = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ explanation: 'explanation' });        
+        const resExplanation = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ explanation: 'explanation' });        
         expect(resExplanation.status).toBe(200);        
         expect(resExplanation.body.explanation).toBe('explanation');
         expect(updatedExplanation.save).toHaveBeenCalled();
@@ -1039,7 +1179,7 @@ describe('PATCH /questions/:id', () => {
             save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: '671e6e7393cee089f87f1f3d'})
         };
         Question.findById.mockResolvedValue(updatedCategoryId);        
-        const resCategoryId = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ categoryId: '671e6e7393cee089f87f1f3d' });        
+        const resCategoryId = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ categoryId: '671e6e7393cee089f87f1f3d' });        
         expect(resCategoryId.status).toBe(200);        
         expect(resCategoryId.body.categoryId).toBe('671e6e7393cee089f87f1f3d');
         expect(updatedCategoryId.save).toHaveBeenCalled();
@@ -1055,7 +1195,7 @@ describe('PATCH /questions/:id', () => {
             })
         };
         Question.findById.mockResolvedValue(updatedQuestionAll);
-        const resUpdateAll = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ 
+        const resUpdateAll = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ 
             questionText: 'Updated Question Text', 
             options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], 
             correctAnswer: 'answer 1', 
@@ -1071,10 +1211,60 @@ describe('PATCH /questions/:id', () => {
         expect(updatedQuestionAll.save).toHaveBeenCalled();
     });
 
+    it('should return 404 error if Category not found', async () => {
+        Category.find.mockResolvedValue(null);
+        const updatedQuestionAll = { 
+            ...mockQuestions[0],  
+            save: jest.fn().mockResolvedValue({ ...mockQuestions[0], 
+                questionText: 'Updated Question Text', 
+                options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], 
+                correctAnswer: 'answer 1', 
+                explanation: 'explanation',
+                categoryId: '671e6e7393cee089f87f1f3d'
+            })
+        };
+        Question.findById.mockResolvedValue(updatedQuestionAll);
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ 
+            questionText: 'Updated Question Text', 
+            options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], 
+            correctAnswer: 'answer 1', 
+            explanation: 'explanation',
+            categoryId: '671e6e7393cee089f87f1f3d'
+        });
+        expect(res.status).toBe(404); 
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Category not found');
+    });
+
+    it('should return 500 error if Category not found', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const updatedQuestionAll = { 
+            ...mockQuestions[0],  
+            save: jest.fn().mockResolvedValue({ ...mockQuestions[0], 
+                questionText: 'Updated Question Text', 
+                options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], 
+                correctAnswer: 'answer 1', 
+                explanation: 'explanation',
+                categoryId: '671e6e7393cee089f87f1f3d'
+            })
+        };
+        Question.findById.mockResolvedValue(updatedQuestionAll);
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ 
+            questionText: 'Updated Question Text', 
+            options: ['answer 1', 'answer 2', 'answer 3', 'answer 4'], 
+            correctAnswer: 'answer 1', 
+            explanation: 'explanation',
+            categoryId: '671e6e7393cee089f87f1f3d'
+        });
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
     it('should return 500 error if save fails', async () => {
         const questionToUpdate = { ...mockQuestions[0], save: jest.fn().mockRejectedValue(new Error('Save failed'))};
         Question.findById.mockResolvedValue(questionToUpdate);        
-        const res = await request(app).patch(`/questions/${mockQuestions[0]._id}`).send({ questionText: 'Updated Question Text' });
+        const res = await request(app).patch(`/questions/${mockQuestions[0]._id.toString()}`).send({ questionText: 'Updated Question Text' });
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Save failed');
@@ -1126,55 +1316,131 @@ describe('PATCH /categories/:oldCategoryId/:newCategoryId', () => {
         expect(res.body.message).toBe('No change occured;oldCategoryId and newCategoryId are the same');
     });
 
-    /*it('should return 400 if oldCategoryId does not exist in any questions', async () => {
-        const res = await request(app).patch('/questions/categories/671e6e7393cee089f87f1f37/671e6e7393cee089f87f1f3d');
+    it('should return 400 if oldCategoryId does not exist in any questions', async () => {        
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea44/671e6e7393cee089f87f1f3d');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('oldCategoryId does not exist in any questions');
     });
 
-    /*it('should return 400 if newCategoryId does not exist in Categories', async () => {
+    it('should return 400 if newCategoryId does not exist in Categories', async () => {        
         Category.findById.mockResolvedValue(null);
         const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f37');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Invalid categoryId. Category does not exist');
         expect(res.body.invalidParams).toEqual({ categoryId: '671e6e7393cee089f87f1f37' });
-    });*/
+    });
 
-    /*it('should update categoryId for questions and return updated questions', async () => {
+    it('should update categoryId for questions and return updated questions', async () => {
         const updatedQuestions = [
-            { 
-                ...mockQuestions[0], 
-                save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: '671e6e7393cee089f87f1f3d'})
+            {
+                ...mockQuestions[0],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
             },
-            { 
-                ...mockQuestions[1], 
-                save: jest.fn().mockResolvedValue({ ...mockQuestions[1], categoryId: '671e6e7393cee089f87f1f3d'})
+            {
+                ...mockQuestions[1],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[1], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
             },
-            { 
-                ...mockQuestions[2], 
-                save: jest.fn().mockResolvedValue({ ...mockQuestions[2], categoryId: '671e6e7393cee089f87f1f3d'})
+            {
+                ...mockQuestions[2],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[2], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
             }
         ];
-        Question.updateMany.mockResolvedValue({ nModified: 3 });
-        Question.find.mockResolvedValue(updatedQuestions);
-
-        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');
-        console.log(res.body)
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');                  
+        Question.find.mockResolvedValue(updatedQuestions);        
         expect(res.status).toBe(201);
-        expect(res.body.message).toBe('CategoryId updated successfully');
-        expect(res.body.categories).toEqual(updatedQuestions);
-    });*/
+        expect(res.body.message).toBe('CategoryId updated successfully');   
+    });
 
-    /*it('should return 500 error if updating categories fails', async () => {
+    it('should return 404 error if Question not found', async () => {
+        Question.find.mockResolvedValue(null);
+        const updatedQuestions = [
+            {
+                ...mockQuestions[0],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            },
+            {
+                ...mockQuestions[1],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[1], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            },
+            {
+                ...mockQuestions[2],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[2], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            }
+        ];
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');                                 
+        expect(res.status).toBe(404);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Questions not found');
+    });
+
+
+    it('should return 404 error if Category not found', async () => {
+        Category.find.mockResolvedValue(null);
+        const updatedQuestions = [
+            {
+                ...mockQuestions[0],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            },
+            {
+                ...mockQuestions[1],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[1], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            },
+            {
+                ...mockQuestions[2],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[2], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            }
+        ];
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');                  
+        Question.find.mockResolvedValue(updatedQuestions);        
+        expect(res.status).toBe(404);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Category not found');
+    });
+
+    it('should return 500 error if Category not found', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const updatedQuestions = [
+            {
+                ...mockQuestions[0],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[0], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            },
+            {
+                ...mockQuestions[1],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[1], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            },
+            {
+                ...mockQuestions[2],
+                categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d'),
+                save: jest.fn().mockResolvedValue({ ...mockQuestions[2], categoryId: new mongoose.Types.ObjectId('671e6e7393cee089f87f1f3d') })
+            }
+        ];
+        const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');                  
+        Question.find.mockResolvedValue(updatedQuestions);   
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
+    it('should return 500 error if updating categories fails', async () => {
         Question.updateMany.mockRejectedValue(new Error('Update failed'));
-
         const res = await request(app).patch('/questions/categories/6702a8418357fa576c95ea43/671e6e7393cee089f87f1f3d');
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred while updating CategoryId');
         expect(res.body.error).toBe('Update failed');
-    });*/
+    });
 });
 
 /********/
@@ -1206,7 +1472,7 @@ describe('DELETE /questions/all', () => {
 describe('DELETE /questions/:id', () => {
     it('should return 404 error if question not found', async () => {
         Question.findById.mockResolvedValue(null);
-        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Question not found');
@@ -1214,7 +1480,7 @@ describe('DELETE /questions/:id', () => {
 
     it('should return a 500 error if finding question fails', async () => {
         Question.findById.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
@@ -1223,7 +1489,7 @@ describe('DELETE /questions/:id', () => {
     it('should return 404 if question not found during delete', async () => {
         Question.findById.mockResolvedValue(mockQuestions[0]);
         Question.findByIdAndDelete.mockResolvedValue(null);
-        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(404);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Question not found');
@@ -1232,7 +1498,7 @@ describe('DELETE /questions/:id', () => {
     it('should delete a question by ID', async () => {
         Question.findById.mockResolvedValue(mockQuestions[0]);
         Question.findByIdAndDelete.mockResolvedValue(mockQuestions[0]);
-        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(200);
         expect(res.body.message).toBe('Question deleted');
     });
@@ -1240,7 +1506,7 @@ describe('DELETE /questions/:id', () => {
     it('should return a 500 error if delete fails', async () => {
         Question.findById.mockResolvedValue(mockQuestions[0]);
         Question.findByIdAndDelete.mockRejectedValue(new Error('Database error'));
-        const res = await request(app).delete(`/questions/${mockQuestions[0]._id}`);
+        const res = await request(app).delete(`/questions/${mockQuestions[0]._id.toString()}`);
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
