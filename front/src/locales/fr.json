@@ -1,6 +1,16 @@
 {
-    "welcomeMessage": "Bienvenue",
-    "startQuiz": "Commencer le Quiz",
+    "login": {
+        "welcomeMessage": "Bienvenue",      
+        "name": "Nom",
+        "namePlaceholder": "Votre nom",
+        "room": "Salle",
+        "join": "Rejoigner une salle",
+        "create": "Créer une salle",
+        "roomId": "Id de la salle",
+        "roomIdPlaceholder": "Id de la salle",
+        "requiredField": "Veuillez compléter ce champ",
+        "startQuiz": "Commencer le Quiz"
+    },
     "submit": "Soumettre",
     "return": "Retour",
     "quiz": {

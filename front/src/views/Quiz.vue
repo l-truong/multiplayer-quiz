@@ -1,10 +1,10 @@
 <template>
-  <div class="container">
-    <div class="container-col1"> 
+  <div class="quiz">
+    <div class="quiz-col1"> 
       <div class="progress-question">
         <span>{{ $t('quiz.question') }}</span><span>{{ currentQuestion + 1 }}/{{ questions.length }}</span>
       </div>          
-      <div class="progress-container">            
+      <div class="progress-quiz">            
         <div class="progress-bar" :style="{ width: progressWidth }"></div>
       </div>
       <div>
@@ -17,8 +17,8 @@
         <button @click="goToHome">{{ $t('return') }}</button>
       </div>
     </div>
-    <div class="container-col2">
-      <section class="quiz-container" v-if="!quizCompleted">	
+    <div class="quiz-col2">
+      <section class="quiz-quiz" v-if="!quizCompleted">	
         <div class="quiz-info">
           <span class="question">{{ getCurrentQuestion.question }}</span>
         </div>	
@@ -157,7 +157,7 @@ export default {
 
 <style lang="scss">
 
-.container {
+.quiz {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,7 +168,7 @@ export default {
     .progress-question {
 
     }
-    .progress-container {      
+    .progress-quiz {      
       height: 0.4em;
       width: 100%;
       border-radius: 0.5em;
@@ -185,7 +185,7 @@ export default {
 
 
   &-col2 {
-    /*.quiz-container {
+    /*.quiz-quiz {
       background-color: #382a4b;
       padding: 1rem;
       width: 100%;

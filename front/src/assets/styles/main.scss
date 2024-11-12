@@ -27,30 +27,44 @@ button {
 }
 
 #app { 
-    height: 60vh;
-    width: 80%;
+    height: 70vh;
+    width: 100%;
     background: grey;  
 
-    .container {
-        display: flex;
-        flex-direction: row;
-        height: 100%;          
-        margin: 0;  
+    .container {        
+        height: 100%;
+        width: 80%;
         padding: 0;
-        background: darkgray;  
 
-        &-col1 {
-            height: 100%;
-            width: 30%;        
-            padding: 1em;
-            background: antiquewhite;  
-        }
+        .quiz {
+            display: flex;
+            flex-direction: row;
+            height: 100%;                  
+            width: 100%;
+            margin: 0;  
+            padding: 0;
+            background: darkgray;  
+    
+            &-col1 {
+                height: 100%;
+                width: 30%;        
+                padding: 1em;
+                background: antiquewhite;  
+            }
+    
+            &-col2 {
+                height: 100%;
+                width: 70%;
+                padding: 1em;
+                background: aquamarine;
+            }
+        } 
+    }    
 
-        &-col2 {
-            height: 100%;
-            width: 70%;
-            padding: 1em;
-            background: aquamarine;
-        }
-    } 
+    .languageSelector {
+        display: flex;
+        justify-content: right;
+        width: 100%;
+        padding: 0.5em 0em;
+    }
 }

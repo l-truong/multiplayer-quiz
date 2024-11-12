@@ -1,6 +1,16 @@
 {
-    "welcomeMessage": "Welcome",
-    "startQuiz": "Start Quiz",
+    "login": {
+        "welcomeMessage": "Welcome",
+        "name": "Name",
+        "namePlaceholder": "You Name",
+        "room": "Room",
+        "join": "Join a room",
+        "create": "Create a room",
+        "roomId": "Room Id",
+        "roomIdPlaceholder": "Room Id",
+        "requiredField": "Please complete this field",
+        "startQuiz": "Start Quiz"
+    },
     "submit": "Submit",
     "return": "Return",
     "quiz": {
