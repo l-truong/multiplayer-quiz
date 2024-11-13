@@ -1,4 +1,26 @@
 /* Global SCSS variables */
 
-$primary-color: #42b983;
+/* Colors */
+$primary-color: #4caf50;
+$primary-color-hover: #45a049;
+$error-color: red;
+$border-color: #ccc;
+// Background Colors
+$background-lightgray: lightgray;
+$background-grey: grey;
+$background-darkgray: darkgray;
+$background-antiquewhite: antiquewhite;
+// Button Colors
+$button-background: #2cce7d;
+$button-text: #2d213f;
+// Other Color Variables
+$quiz-column1-background: antiquewhite;
+
+
+/* Fonts size */
 $font-size-large: 1.5rem;
+$font-size-small: 0.875rem;
+
+
+/* Images paths */
+$background-image-url: url('../assets/images/login-img.jpg');

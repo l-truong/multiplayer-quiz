@@ -1,51 +1,52 @@
 <template>
-  <div class="quiz">
+  <div class="quiz home">
     <div class="quiz-col1">
-      <h1>{{ $t('login.welcomeMessage') }}</h1>
+      <h1>{{ $t("home.welcomeMessage") }}</h1>
       <form @submit.prevent="submitForm">
-        <label for="name">{{ $t('login.name') }}</label>
+        <label for="name">{{ $t("home.name") }}</label>
         <div>
-          <input 
-            type="text" 
-            id="name" 
-            v-model="name" 
-            :placeholder="$t('login.namePlaceholder')"
-            :class="{'is-invalid': nameError}"
+          <input
+            type="text"
+            id="name"
+            v-model="name"
+            :placeholder="$t('home.namePlaceholder')"
+            :class="{ 'is-invalid': nameError }"
           />
-          <span v-if="nameError" class="error-message">{{ this.$t('login.requiredField') }}</span>
+          <span v-if="nameError" class="error-message">{{
+            this.$t("home.requiredField")
+          }}</span>
         </div>
-                
-        <label for="room">{{ $t('login.room') }}</label>
+
+        <label for="room">{{ $t("home.room") }}</label>
         <select v-model="room" id="room" name="room">
-          <option value="join">{{ $t('login.join') }}</option>
-          <option value="create">{{ $t('login.create') }}</option>
-        </select>        
+          <option value="join">{{ $t("home.join") }}</option>
+          <option value="create">{{ $t("home.create") }}</option>
+        </select>
 
-        <label for="roomId">{{ $t('login.roomId') }}</label>
+        <label for="roomId">{{ $t("home.roomId") }}</label>
         <div>
-          <input 
-            type="text" 
-            id="roomId" 
-            v-model="roomId" 
-            :placeholder="$t('login.roomIdPlaceholder')" 
-            :class="{'is-invalid': roomError}"
+          <input
+            type="text"
+            id="roomId"
+            v-model="roomId"
+            :placeholder="$t('home.roomIdPlaceholder')"
+            :class="{ 'is-invalid': roomError }"
           />
-          <span v-if="roomError" class="error-message">{{ this.$t('login.requiredField') }}</span>
-        </div>        
+          <span v-if="roomError" class="error-message">{{
+            this.$t("home.requiredField")
+          }}</span>
+        </div>
 
-        <input 
-          type="submit" 
-          :value="$t('login.startQuiz')"
-        />
+        <input type="submit" :value="$t('home.startQuiz')" />
       </form>
     </div>
-    <div class="quiz-col2">
+    <div class="quiz-col2 div-background">      
     </div>
-  </div>  
+  </div>
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 
 export default {
   name: "HomeView",
@@ -53,18 +54,21 @@ export default {
     const router = useRouter();
 
     const goToQuiz = () => {
-      router.push('/quiz');
+      router.push("/quiz");
+    };
+    const goToCategories = () => {
+      router.push("/categories");
     };
 
-    return { goToQuiz };
+    return { goToQuiz, goToCategories };
   },
   data() {
     return {
-      name: '',
-      room: 'join', //default
-      roomId: '',
-      nameError: '',
-      roomError: ''
+      name: "",
+      room: "create", //default
+      roomId: "",
+      nameError: "",
+      roomError: "",
     };
   },
   methods: {
@@ -89,50 +93,66 @@ export default {
       const isRoomValid = this.validateRoom();
 
       if (isNameValid && isRoomValid) {
-        console.log('Form submitted with data:', {
+        console.log("Form submitted with data:", {
           name: this.name,
           room: this.room,
-          roomId: this.roomId
+          roomId: this.roomId,
         });
-        this.goToQuiz();
-      }      
-    }
-  }
+
+        if (this.room === "join") {
+          this.goToQuiz();
+        } else {
+          this.goToCategories();
+        }
+      }
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/variables';
+
+.home {
   input[type="text"], select {
     width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
+    padding: 0.75em 1.25em;
+    margin: 0.5em 0;
     display: inline-block;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 0.0625em solid $border-color;
+    border-radius: 0.25em;
     box-sizing: border-box;
   }
 
   input[type="submit"] {
     width: 100%;
-    background-color: #4CAF50;
+    background-color: $primary-color;
     color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
+    padding: 0.875em 1.25em;
+    margin: 0.5em 0;
     border: none;
-    border-radius: 4px;
+    border-radius: 0.25em;
     cursor: pointer;
   }
 
   input[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: $primary-color-hover;
   }
 
   .error-message {
-    color: red;
+    color: $error-color;
     font-size: 0.875rem;
   }
 
   .is-invalid {
-    border-color: red;
+    border-color: $error-color;
   }
+
+  .div-background {
+    background-image: $background-image-url;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
 </style>
