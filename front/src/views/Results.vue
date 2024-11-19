@@ -1,8 +1,9 @@
 <template>
   <div class="quiz results">
-    <div class="quiz-col1 home">ResultsView</div>
+    <div class="quiz-col1 home"></div>
     <div class="quiz-col2">
-        <button @click="goToHome">Click Me</button>        
+        <button @click="goToCategories">{{ $t("results.tryAgain") }}</button>     
+        <button @click="goToHome">{{ $t("results.home") }}</button>   
     </div>
   </div>
 </template>
@@ -18,8 +19,11 @@ export default {
     const goToHome = () => {
       router.push("/");
     };
+    const goToCategories = () => {
+      router.push("/categories");
+    };
 
-    return { goToHome };
+    return { goToHome, goToCategories };
   },
   methods: {},
 };

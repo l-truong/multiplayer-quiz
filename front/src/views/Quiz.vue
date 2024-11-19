@@ -1,5 +1,15 @@
 <template>
-  <div class="quiz">
+    <div class="quiz">
+    <div class="quiz-col1 game">
+    </div>
+    <div class="quiz-col2">  
+      <button>{{ $t("game.next") }}</button>   
+      <button @click="goToResults">{{ $t("game.results") }}</button>   
+    </div>
+  </div>
+
+  <!--
+  <div class="quiz">    
     <div class="quiz-col1"> 
       <div class="progress-question">
         <span>{{ $t('quiz.question') }}</span><span>{{ currentQuestion + 1 }}/{{ questions.length }}</span>
@@ -57,6 +67,7 @@
       </section>
     </div>  
   </div>  
+  -->
 </template>
   
 <script>
@@ -66,10 +77,12 @@ export default {
   name: "QuizView",
   setup() {
     const router = useRouter();
-    const goToHome = () => {
-      router.push('/');
+
+    const goToResults = () => {
+      router.push('/results');
     };
-    return { goToHome };
+
+    return { goToResults };
   },
   data() {
     return {
@@ -155,8 +168,17 @@ export default {
 </script>
 
 
-<style lang="scss">
 
+<style lang="scss" scoped>
+@import '@/assets/styles/variables';
+
+.game {
+ 
+}
+</style>
+
+<style lang="scss">
+/*
 .quiz {
   display: flex;
   flex-direction: column;
@@ -185,7 +207,7 @@ export default {
 
 
   &-col2 {
-    /*.quiz-quiz {
+    .quiz-quiz {
       background-color: #382a4b;
       padding: 1rem;
       width: 100%;
@@ -239,7 +261,7 @@ export default {
           }
         }
       }
-    }*/
+    }
   }
-}
+}*/
 </style>

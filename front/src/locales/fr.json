@@ -11,9 +11,17 @@
         "requiredField": "Veuillez compléter ce champ",
         "startQuiz": "Commencer le Quiz"
     },
-    "submit": "Soumettre",
-    "return": "Retour",
-    "quiz": {
-        "question": "Question"
+    "categories": {
+        "copyLink": "Lien",
+        "return": "Retour",
+        "start": "Commencer"
+    },    
+    "game": {
+        "next": "Suivant",
+        "results": "Résultats"
+    },
+    "results": {
+        "tryAgain": "Rejouer",
+        "home": "Accueil"
     }
 }
