@@ -21,6 +21,32 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get all english categories
+router.get('/eng', async (req, res) => {
+    try {
+        const categories = await Category.find({ language: 'eng' });
+        return res.json(categories);
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred', 
+            error: err.message 
+        });
+    }
+});
+
+// Get all french categories
+router.get('/fr', async (req, res) => {
+    try {
+        const categories = await Category.find({ language: 'fr' });
+        return res.json(categories);
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred', 
+            error: err.message 
+        });
+    }
+});
+
 // Get one category
 router.get('/:id', async (req, res, next) => {
     let category;

@@ -14,8 +14,169 @@ const Category = require('../models/category');
 // Get all questions
 router.get('/', async (req, res) => {
     try {
+        if (req.body.categories !== undefined) {
+            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {               
+                let categoryIdsToCheck = [];
+                req.body.categories.forEach(category => {
+                    categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
+                });              
+
+                const questionsAll = await Question.find();
+                let questions = [];
+                questionsAll.forEach(question => {               
+                    const includes = categoryIdsToCheck.some(id => id.toString() === question.categoryId.toString());
+                    if(includes === true) {
+                        questions.push(question)
+                    }
+                });
+
+                return res.json(questions);
+            } else {
+                return res.status(500).json({                     
+                    message: 'An error occurred',
+                    error: 'Parameter categories should be an array and not contain null or empty values'
+                });
+            }            
+        }
+
         const questions = await Question.find();
         return res.json(questions);
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred', 
+            error: err.message 
+        });
+    }
+});
+
+// Get all english questions
+router.get('/eng', async (req, res, next) => {       
+    let categories;
+    try {     
+        categories = await Category.find({ language: 'eng' });
+        if (categories === null) {
+            return res.status(404).json({ 
+                message: 'An error occurred',
+                error: 'Category not found'
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred',
+            error: err.message 
+        });
+    }
+    res.categories = categories;
+    next();
+}, async (req, res) => {
+    
+    try {                 
+        let questions = [];
+        if (req.body.categories !== undefined) {          
+            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {
+                let categoryIdsToCheck = [];
+                req.body.categories.forEach(category => {
+                    categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
+                });              
+
+                const questionsAll = await Question.find();
+                questionsAll.forEach(question => {               
+                    const includes = categoryIdsToCheck.some(id => id.toString() === question.categoryId.toString());
+                    if(includes === true) {
+                        questions.push(question)
+                    }
+                });  
+            } else {
+                return res.status(500).json({                     
+                    message: 'An error occurred',
+                    error: 'Parameter categories should be an array and not contain null or empty values'
+                });
+            }            
+        } else {
+            questions = await Question.find(); 
+        }
+
+        let categoriesIds = [];
+        res.categories.forEach(category => {               
+            if(category.language === 'eng') {
+                categoriesIds.push(category)
+            }
+        });        
+        let englishQuestions = [];
+        questions.forEach(question => {               
+            const includes = categoriesIds.some(category => category.categoryId.toString() === question.categoryId.toString());
+            if(includes === true) {
+                englishQuestions.push(question)
+            }
+        }); 
+        return res.json(englishQuestions);
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred', 
+            error: err.message 
+        });
+    }
+});
+
+// Get all french questions
+router.get('/fr', async (req, res, next) => {       
+    let categories;
+    try {     
+        categories = await Category.find({ language: 'fr' });
+        if (categories === null) {
+            return res.status(404).json({ 
+                message: 'An error occurred',
+                error: 'Category not found'
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred',
+            error: err.message 
+        });
+    }
+    res.categories = categories;
+    next();
+}, async (req, res) => {
+    try {       
+        let questions = [];
+        if (req.body.categories !== undefined) {
+            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {
+                let categoryIdsToCheck = [];
+                req.body.categories.forEach(category => {
+                    categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
+                });              
+
+                const questionsAll = await Question.find();
+                questionsAll.forEach(question => {               
+                    const includes = categoryIdsToCheck.some(id => id.toString() === question.categoryId.toString());
+                    if(includes === true) {
+                        questions.push(question)
+                    }
+                });  
+            } else {
+                return res.status(500).json({                     
+                    message: 'An error occurred',
+                    error: 'Parameter categories should be an array and not contain null or empty values'
+                });
+            }            
+        } else {
+            questions = await Question.find(); 
+        }
+        let categoriesIds = [];
+        res.categories.forEach(category => {               
+            if(category.language === 'fr') {
+                categoriesIds.push(category)
+            }
+        });        
+        let frenchQuestions = [];
+        questions.forEach(question => {               
+            const includes = categoriesIds.some(category => category.categoryId.toString() === question.categoryId.toString());
+            if(includes === true) {
+                frenchQuestions.push(question)
+            }
+        }); 
+        return res.json(frenchQuestions);
     } catch (err) {
         return res.status(500).json({ 
             message: 'An error occurred', 
@@ -45,7 +206,30 @@ router.get('/random/:random?', async (req, res) => {
     }
 
     try {
-        const questions = await Question.find();
+        let questions = [];
+        if (req.body.categories !== undefined) {
+            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {
+                let categoryIdsToCheck = [];
+                req.body.categories.forEach(category => {
+                    categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
+                });              
+
+                const questionsAll = await Question.find();
+                questionsAll.forEach(question => {               
+                    const includes = categoryIdsToCheck.some(id => id.toString() === question.categoryId.toString());
+                    if(includes === true) {
+                        questions.push(question)
+                    }
+                });    
+            } else {
+                return res.status(500).json({                     
+                    message: 'An error occurred',
+                    error: 'Parameter categories should be an array and not contain null or empty values'
+                });
+            }            
+        } else {
+            questions = await Question.find(); 
+        }
         const shuffledQuestions = questions.sort(() => 0.5 - Math.random());
         const selectedQuestions = shuffledQuestions.slice(0, length);
         return res.json(selectedQuestions);
@@ -55,6 +239,81 @@ router.get('/random/:random?', async (req, res) => {
             error: err.message 
         });
     } 
+});
+
+// Get stats questions for each categories
+router.get('/stats/:lang?', async (req, res, next) => {       
+    let categories;
+    try {     
+        categories = await Category.find();
+        if (categories === null) {
+            return res.status(404).json({ 
+                message: 'An error occurred',
+                error: 'Category not found'
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({ 
+            message: 'An error occurred',
+            error: err.message 
+        });
+    }
+    res.categories = categories;
+    next();
+}, async (req, res) => {      
+    const language = req.params.lang || 'all';  // Default to 'all' if no language is provided
+
+    let categories = [];    
+    if (language === 'all') {
+        categories = res.categories;
+    } else {            
+        const categoriesAll = res.categories;
+        categoriesAll.forEach(category => {               
+            if(category.language === language) {
+                categories.push(category);
+            }
+        }); 
+
+        if (categories.length === 0) {
+            return res.status(404).json({
+                message: 'An error occurred',
+                error: 'Parameter lang is not a valid parameter',
+                invalidParams: {
+                    language: req.params.lang
+                }
+            });
+        }
+    }       
+
+    try {        
+        const categoriesIds = new Set(categories.map(item => item.categoryId.toString()));
+        const questions = await Question.find();
+        const filteredQuestions = questions.filter(item => categoriesIds.has(item.categoryId.toString()));
+
+        const categoryCount = {};
+        // Loop through the filtered questions and count occurrences of each categoryId
+        filteredQuestions.forEach(item => {
+            const categoryId = item.categoryId.toString();
+            categoryCount[categoryId] = (categoryCount[categoryId] || 0) + 1;
+        });
+
+        // Convert the count object to the desired format
+        const stats = Object.keys(categoryCount).map(categoryId => {
+            const category = categories.find(cat => cat.categoryId.toString() === categoryId);
+            return {
+                name: category.name,
+                categoryId: categoryId,
+                occurence: categoryCount[categoryId],
+            };
+        });
+
+        return res.json(stats);
+    } catch (err) {
+        return res.status(500).json({
+            message: 'An error occurred',
+            error: err.message
+        });
+    }
 });
 
 // Get one question

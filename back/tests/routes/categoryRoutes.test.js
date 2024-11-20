@@ -9,79 +9,19 @@ const app = express();
 app.use(express.json()); // Middleware for JSON parsing
 app.use('/categories', router); // Use category routes
 
-const headers = ['name', 'description', 'language'];
-const enumLanguage = ['eng', 'fr'];
-const mockCategories = [{
-    _id: new mongoose.Types.ObjectId('6702a8418357fa576c95ea44'),
-    categoryId: new mongoose.Types.ObjectId('6702a8418357fa576c95ea43'),
-    name: 'Test Category name',
-    description: 'Test Category description',
-    language: 'eng',
-    createdAt: '2024-10-06T15:09:53.744Z',
-    updatedAt: '2024-10-06T15:09:53.744Z',
-    __v: 0,
-}];
-const mockSession = {
-    startTransaction: jest.fn(),
-    commitTransaction: jest.fn(),
-    abortTransaction: jest.fn(),
-    endSession: jest.fn(),
-};
+const { enumLanguage, headersCategories, mockCategories } = require('../mocks/mockCategories');
+const { mockSession } = require('../mocks/mockSession');
+const { setupCategorieMocks, resetMocks } = require('../utils/setupMocks');
+const { convertObjectIdsToStrings, convertObjectIdsToStringsInObject, arrayToCustomCsvBuffer } = require('../utils/convertFunctions');
 
 beforeEach(() => {
-    // setup Mocks
-    Category.find.mockResolvedValue(mockCategories);
-    Category.schema = { path: () => ({ enumValues: enumLanguage }) };
-    Category.startSession.mockResolvedValue(mockSession);
+    setupCategorieMocks();
 });
 
 afterEach(() => {
-    jest.clearAllMocks(); // Clear mocks after each test
-    jest.resetAllMocks();
+    resetMocks();
 });
 
-
-/********/
-/* FUNCTIONS */
-/********/
-
-function convertObjectIdsToStrings(arr) {
-    return arr.map(item => {
-        const newItem = { ...item };  
-        // If the value is an instance of ObjectId, convert it to a string
-        for (let key in newItem) {
-            if (newItem[key] instanceof mongoose.Types.ObjectId) {
-            newItem[key] = newItem[key].toString();
-            }
-        }  
-        return newItem;
-    });
-}
-
-function convertObjectIdsToStringsInObject(obj) {
-    const newObj = { ...obj };  
-    for (let key in newObj) {
-        // If the value is an instance of ObjectId, convert it to a string
-        if (newObj[key] instanceof mongoose.Types.ObjectId) {
-            newObj[key] = newObj[key].toString();
-        }
-    }  
-    return newObj;
-}
-
-function convertObjectIdToString(value) {
-    // If the value is an instance of ObjectId, convert it to a string
-    return value instanceof mongoose.Types.ObjectId ? value.toString() : value;
-}
-
-function arrayToCustomCsvBuffer(data) {
-    const rows = data.map((row) => {
-        return headers.map(header => {           
-            return row[header] || '';
-        }).join(';');
-    });
-    return Buffer.from([headers.join(';'), ...rows].join('\n'));
-}
 
 /********/
 /* GET */
@@ -101,6 +41,58 @@ describe('GET /categories', () => {
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Database error');
+    });
+});
+
+// GET /categories/eng
+describe('GET /categories/eng', () => {
+    it('should return all categories with language "eng"', async () => {
+        const mockEngCategories = mockCategories.filter(category => category.language === 'eng');
+        Category.find.mockResolvedValue(mockEngCategories);
+        const res = await request(app).get('/categories/eng');
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(convertObjectIdsToStrings(mockEngCategories));
+    });
+
+    it('should return 500 error on server failure', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const res = await request(app).get('/categories/eng');
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
+    it('should return an empty array when no categories in English are found', async () => {
+        Category.find.mockResolvedValue([]);
+        const res = await request(app).get('/categories/eng');
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
+    });
+});
+
+// GET /categories/fr
+describe('GET /categories/fr', () => {
+    it('should return all categories with language "fr"', async () => {
+        const mockFrCategories = mockCategories.filter(category => category.language === 'fr');
+        Category.find.mockResolvedValue(mockFrCategories);
+        const res = await request(app).get('/categories/fr');
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(convertObjectIdsToStrings(mockFrCategories));
+    });
+
+    it('should return 500 error on server failure', async () => {
+        Category.find.mockRejectedValue(new Error('Database error'));
+        const res = await request(app).get('/categories/fr');
+        expect(res.status).toBe(500);
+        expect(res.body.message).toBe('An error occurred');
+        expect(res.body.error).toBe('Database error');
+    });
+
+    it('should return an empty array when no categories in French are found', async () => {
+        Category.find.mockResolvedValue([]);
+        const res = await request(app).get('/categories/fr');
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
     });
 });
 
@@ -419,7 +411,7 @@ describe('POST /categories/bulk', () => {
 describe('POST /categories/csv', () => {
     it('should return 400 error if missing categories parameter or empty', async () => {
         const csvBufferMissing = Buffer.from('');
-        const resMissing = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(csvBufferMissing), 'categories.csv');
+        const resMissing = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(headersCategories, csvBufferMissing), 'categories.csv');
         expect(resMissing.status).toBe(400);
         expect(resMissing.body.message).toBe('An error occurred');
         expect(resMissing.body.error).toBe('Categories must be a non-empty array');
@@ -441,7 +433,7 @@ describe('POST /categories/csv', () => {
         ];
         Category.prototype.save.mockResolvedValue(newCategories);
 
-        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(newCategories), 'categories.csv');
+        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(headersCategories, newCategories), 'categories.csv');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('Some categories could not be processed');
         expect(res.body.length).toBe(newCategories.length);
@@ -475,7 +467,7 @@ describe('POST /categories/csv', () => {
         ];
         Category.prototype.save.mockResolvedValue(newCategories);
 
-        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(newCategories), 'categories.csv');
+        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(headersCategories, newCategories), 'categories.csv');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('Some categories could not be processed');
         expect(res.body.length).toBe(newCategories.length);
@@ -496,7 +488,7 @@ describe('POST /categories/csv', () => {
         ];
         Category.prototype.save.mockResolvedValue(newCategories);
 
-        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(newCategories), 'categories.csv');
+        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(headersCategories, newCategories), 'categories.csv');
         expect(res.status).toBe(400);
         expect(res.body.message).toBe('Some categories could not be processed');
         expect(res.body.length).toBe(4);
@@ -528,7 +520,7 @@ describe('POST /categories/csv', () => {
         ];
         Category.prototype.save.mockResolvedValue(newCategories);
 
-        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(newCategories), 'categories.csv');
+        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(headersCategories, newCategories), 'categories.csv');
         expect(res.status).toBe(201);
         expect(res.body.message).toBe('Categories created successfully');
         expect(res.body.categories[0].length).toBe(newCategories.length);
@@ -550,7 +542,7 @@ describe('POST /categories/csv', () => {
         ];        
         Category.prototype.save.mockRejectedValue(new Error('Validation error'));
     
-        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(newCategories), 'categories.csv');
+        const res = await request(app).post('/categories/csv').attach('categories', arrayToCustomCsvBuffer(headersCategories, newCategories), 'categories.csv');
         expect(res.status).toBe(500);
         expect(res.body.message).toBe('An error occurred');
         expect(res.body.error).toBe('Validation error');
