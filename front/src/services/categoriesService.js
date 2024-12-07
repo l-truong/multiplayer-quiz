@@ -8,7 +8,7 @@ export const categoriesService = {
             .then(res => res.data)
             .catch(err => {
             console.error('error:', err);
-            throw err; 
+            //throw err; 
         });
     },
 
@@ -25,7 +25,7 @@ export const categoriesService = {
             .then(res => res.data)
             .catch(err => {
                 console.error('Error:', err);
-                throw err;
+                //throw err;
             });
     }
 }

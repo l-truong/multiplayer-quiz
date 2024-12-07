@@ -12,15 +12,22 @@
         "startQuiz": "Commencer le Quiz"
     },
     "categories": {
+        "title": "Création de partie",
+        "numberOfQuestions": "Nombre de questions",
+        "questionRange": "questions",
+        "categories": "Thèmes",
+        "timer": "Temps",
+        "timesValue": "seconds",
         "copyLink": "Lien",
         "return": "Retour",
-        "start": "Commencer"
+        "start": "Commencer"        
     },    
     "game": {
-        "next": "Suivant",
-        "results": "Résultats"
+        "title": "Question"
     },
     "results": {
+        "score": "Score",
+        "title": "Résultats",
         "tryAgain": "Rejouer",
         "home": "Accueil"
     }

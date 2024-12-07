@@ -1,11 +1,11 @@
 import { createI18n } from 'vue-i18n';
 
 // Import the translations
-import en from './locales/en.json';
+import eng from './locales/eng.json';
 import fr from './locales/fr.json';
 
 const messages = {
-  en,  // English
+  eng,  // English
   fr,  // French
 };
 

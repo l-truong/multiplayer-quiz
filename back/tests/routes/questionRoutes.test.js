@@ -38,19 +38,18 @@ describe('GET /questions', () => {
         expect(res.body).toEqual(convertObjectIdsToStrings(mockQuestions));
 
         const categoriesNull  = { categories: null };
-        const resWithCategoriesNull = await request(app).get('/questions').send(categoriesNull);;
+        const resWithCategoriesNull = await request(app).get('/questions').query(categoriesNull);;
         expect(resWithCategoriesNull.status).toBe(500);
         expect(resWithCategoriesNull.body.message).toBe('An error occurred');
         expect(resWithCategoriesNull.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
+    
+        const categoriesString  = { categories: '6702a8418357fa576c95ea43' };
+        const resWithCategoriesString = await request(app).get('/questions').query(categoriesString);      
+        expect(resWithCategoriesString.status).toBe(200);         
+        expect(resWithCategoriesString.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(question => [categoriesString.categories].includes(question.categoryId.toString()))));
 
-        const categoriesBadValues  = { categories: ['6702a8418357fa576c95ea43', '', null] };
-        const resWithCategoriesBadValues = await request(app).get('/questions').send(categoriesBadValues);;
-        expect(resWithCategoriesBadValues.status).toBe(500);
-        expect(resWithCategoriesBadValues.body.message).toBe('An error occurred');
-        expect(resWithCategoriesBadValues.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const categories  = { categories: ['6702a8418357fa576c95ea43'] };
-        const resWithCategories = await request(app).get('/questions').send(categories);      
+        const categories  = { categories: ['6702a8418357fa576c95ea43', '671e6e7393cee089f87f1f3d'] };
+        const resWithCategories = await request(app).get('/questions').query(categories);      
         expect(resWithCategories.status).toBe(200);         
         expect(resWithCategories.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(question => categories.categories.includes(question.categoryId.toString()))));
     });
@@ -66,21 +65,11 @@ describe('GET /questions', () => {
 
 // GET /questions/eng
 describe('GET /questions/eng', () => {  
-    it('should return 500 if parameter categories not an array or contain null or empty value', async () => {        
-        const resNotArray = await request(app).get('/questions/eng').send({ categories : 0 });           
-        expect(resNotArray.status).toBe(500);
-        expect(resNotArray.body.message).toBe('An error occurred');
-        expect(resNotArray.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const resEmpty = await request(app).get('/questions/eng').send({ categories : [] });           
-        expect(resEmpty.status).toBe(500);
-        expect(resEmpty.body.message).toBe('An error occurred');
-        expect(resEmpty.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const resNullValue = await request(app).get('/questions/eng').send({ categories : ['6702a8418357fa576c95ea43', null] });           
+    it('should return 500 if parameter categories null', async () => {        
+        const resNullValue = await request(app).get('/questions/eng').query({ categories : null });           
         expect(resNullValue.status).toBe(500);
         expect(resNullValue.body.message).toBe('An error occurred');
-        expect(resNullValue.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
+        expect(resNullValue.body.error).toBe('Parameter categories should not be null');
     });
 
     it('should return all questions in eng', async () => {        
@@ -89,8 +78,13 @@ describe('GET /questions/eng', () => {
         expect(res.status).toBe(200);        
         expect(res.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(item => categoryIds.includes(item.categoryId.toString()))));
 
-        const categoriesList = ['6702a8418357fa576c95ea43'];
-        const resWithCategories = await request(app).get('/questions/eng').send({ categories : categoriesList });         
+        const categoriesString  = { categories: '6702a8418357fa576c95ea43' };
+        const resWithCategoriesString = await request(app).get('/questions/eng').query(categoriesString);      
+        expect(resWithCategoriesString.status).toBe(200);         
+        expect(resWithCategoriesString.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(question => [categoriesString.categories].includes(question.categoryId.toString()))));
+
+        const categoriesList = ['6702a8418357fa576c95ea43', '671e6e7393cee089f87f1f3d'];
+        const resWithCategories = await request(app).get('/questions/eng').query({ categories : categoriesList });         
         const categoryIdsWithCategories = mockCategories.filter(category => category.language === 'eng' && categoriesList.includes(category.categoryId.toString())).map(item => item.categoryId.toString());       
         expect(resWithCategories.status).toBe(200);        
         expect(resWithCategories.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(item => categoryIdsWithCategories.includes(item.categoryId.toString()))));
@@ -123,21 +117,11 @@ describe('GET /questions/eng', () => {
 
 // GET /questions/fr
 describe('GET /questions/fr', () => {  
-    it('should return 500 if parameter categories not an array or contain null or empty value', async () => {        
-        const resNotArray = await request(app).get('/questions/fr').send({ categories : 0 });           
-        expect(resNotArray.status).toBe(500);
-        expect(resNotArray.body.message).toBe('An error occurred');
-        expect(resNotArray.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const resEmpty = await request(app).get('/questions/fr').send({ categories : [] });           
-        expect(resEmpty.status).toBe(500);
-        expect(resEmpty.body.message).toBe('An error occurred');
-        expect(resEmpty.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const resNullValue = await request(app).get('/questions/fr').send({ categories : ['6702a8418357fa576c95ea43', null] });           
+    it('should return 500 if parameter categories null', async () => {        
+        const resNullValue = await request(app).get('/questions/fr').query({ categories : null });           
         expect(resNullValue.status).toBe(500);
         expect(resNullValue.body.message).toBe('An error occurred');
-        expect(resNullValue.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
+        expect(resNullValue.body.error).toBe('Parameter categories should not be null');
     });
 
     it('should return all questions in fr', async () => {        
@@ -146,8 +130,13 @@ describe('GET /questions/fr', () => {
         expect(res.status).toBe(200);        
         expect(res.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(item => categoryIds.includes(item.categoryId.toString()))));
 
-        const categoriesList = ['672d0698004c7514fcd799af'];
-        const resWithCategories = await request(app).get('/questions/fr').send({ categories : categoriesList });         
+        const categoriesString  = { categories: '672d0698004c7514fcd799af' };
+        const resWithCategoriesString = await request(app).get('/questions/fr').query(categoriesString);      
+        expect(resWithCategoriesString.status).toBe(200);         
+        expect(resWithCategoriesString.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(question => [categoriesString.categories].includes(question.categoryId.toString()))));
+
+        const categoriesList = ['672d0698004c7514fcd799af', '672d0698004c7514fcd799c7'];
+        const resWithCategories = await request(app).get('/questions/fr').query({ categories : categoriesList });         
         const categoryIdsWithCategories = mockCategories.filter(category => category.language === 'fr' && categoriesList.includes(category.categoryId.toString())).map(item => item.categoryId.toString());       
         expect(resWithCategories.status).toBe(200);        
         expect(resWithCategories.body).toEqual(convertObjectIdsToStrings(mockQuestions.filter(item => categoryIdsWithCategories.includes(item.categoryId.toString()))));
@@ -180,22 +169,12 @@ describe('GET /questions/fr', () => {
 
 // GET /questions/random/:random
 describe('GET /questions/random/:random', () => {
-    it('should return 500 if parameter categories not an array or contain null or empty value', async () => {          
+    it('should return 500 if parameter categories null', async () => {          
         const length = 2;    
-        const resNotArray = await request(app).get(`/questions/random/${length}`).send({ categories : 0 });           
+        const resNotArray = await request(app).get(`/questions/random/${length}`).query({ categories : null });           
         expect(resNotArray.status).toBe(500);
         expect(resNotArray.body.message).toBe('An error occurred');
-        expect(resNotArray.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const resEmpty = await request(app).get(`/questions/random/${length}`).send({ categories : [] });           
-        expect(resEmpty.status).toBe(500);
-        expect(resEmpty.body.message).toBe('An error occurred');
-        expect(resEmpty.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
-
-        const resNullValue = await request(app).get(`/questions/random/${length}`).send({ categories : ['6702a8418357fa576c95ea43', null] });           
-        expect(resNullValue.status).toBe(500);
-        expect(resNullValue.body.message).toBe('An error occurred');
-        expect(resNullValue.body.error).toBe('Parameter categories should be an array and not contain null or empty values');
+        expect(resNotArray.body.error).toBe('Parameter categories should not be null');
     });
 
     it('should return 404 if the random parameter is missing', async () => {
@@ -231,8 +210,18 @@ describe('GET /questions/random/:random', () => {
             mockQuestions.some(mockQuestion => convertObjectIdToString(mockQuestion._id) === question._id)
         )).toBe(true);
 
-        const categoriesList = ['672d0698004c7514fcd799af'];
-        const resWithCategories = await request(app).get(`/questions/random/${length}`).send({ categories : categoriesList });         
+        const categoriesString = '672d0698004c7514fcd799af';
+        const resWithCategory = await request(app).get(`/questions/random/${length}`).query({ categories : categoriesString });         
+        const categoryIdsWithCategory = mockCategories.filter(category => category.language === 'fr' && [categoriesString].includes(category.categoryId.toString())).map(item => item.categoryId.toString());        
+        const mockQuestionsWithCategory = mockQuestions.filter(item => categoryIdsWithCategory.includes(item.categoryId.toString()));
+        expect(resWithCategory.status).toBe(200);     
+        expect(resWithCategory.body).toHaveLength(length);
+        expect(resWithCategory.body.every(question => 
+            mockQuestionsWithCategory.some(mockQuestion => convertObjectIdToString(mockQuestion._id) === question._id)
+        )).toBe(true);
+
+        const categoriesList = ['672d0698004c7514fcd799af', '672d0698004c7514fcd799c7'];
+        const resWithCategories = await request(app).get(`/questions/random/${length}`).query({ categories : categoriesList });         
         const categoryIdsWithCategories = mockCategories.filter(category => category.language === 'fr' && categoriesList.includes(category.categoryId.toString())).map(item => item.categoryId.toString());
         const mockQuestionsWithCategories = mockQuestions.filter(item => categoryIdsWithCategories.includes(item.categoryId.toString()));
         expect(resWithCategories.status).toBe(200);     
@@ -640,6 +629,7 @@ describe('POST /questions', () => {
     });
 });
 
+// POST /questions/bulk
 describe('POST /questions/bulk', () => {   
     it('should return 400 error if missing questions parameter or empty', async () => {
         const newMissing = {};
@@ -900,6 +890,7 @@ describe('POST /questions/bulk', () => {
     });
 });
 
+// POST /questions/csv
 describe('POST /questions/csv', () => {
     it('should return 400 error if missing questions parameter or empty', async () => {
         const csvBufferMissing = Buffer.from('');
@@ -1579,7 +1570,7 @@ describe('PATCH /categories/:oldCategoryId/:newCategoryId', () => {
 /* DELETE */
 /********/
 
-// Delete all categories
+// DELETE /questions/all
 describe('DELETE /questions/all', () => {
     it('should delete all questions', async () => {
         Question.deleteMany.mockResolvedValue({ deletedCount: 3 });
@@ -1601,6 +1592,7 @@ describe('DELETE /questions/all', () => {
     });
 });
 
+// DELETE /questions/:id
 describe('DELETE /questions/:id', () => {
     it('should return 404 error if question not found', async () => {
         Question.findById.mockResolvedValue(null);

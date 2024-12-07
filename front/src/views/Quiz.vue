@@ -1,168 +1,112 @@
 <template>
-    <div class="quiz">
-    <div class="quiz-col1 game">
-    </div>
-    <div class="quiz-col2">  
-      <button>{{ $t("game.next") }}</button>   
-      <button @click="goToResults">{{ $t("game.results") }}</button>   
+  <div class="quiz game" v-if="questions.length > 0">
+    <div class='quiz-col1'>
+      <div>{{ $t('game.title') }} {{ index + 1 }} / {{ questions.length }}</div>
+      <div class="progress-container">
+        <div class="progress-bar" :style="{ width: ( ( (index) / questions.length ) * 100 ) + '%' }"></div>
+      </div>
+      <div>{{ getNameByCategoryId(questions[index].categoryId) }}</div>      
+      <div>{{ timeLeft }}</div>
+    </div>    
+    <div class="quiz-col2 d-flex flex-column justify-content-between">
+      <div>
+        <div>{{ currentQuestion.questionText }}</div>   
+        <div class="d-flex flex-row justify-content-between">
+          <div v-for="(option, optionIndex) in randomizedOptions" :key="optionIndex">
+            <button 
+              :id="`option-${optionIndex}`" 
+              :value="option"
+              @click="goNextQuestion(option)"
+            >
+              {{ option }}
+            </button>
+          </div>
+        </div>   
+      </div>  
+      <div></div>     
     </div>
   </div>
-
-  <!--
-  <div class="quiz">    
-    <div class="quiz-col1"> 
-      <div class="progress-question">
-        <span>{{ $t('quiz.question') }}</span><span>{{ currentQuestion + 1 }}/{{ questions.length }}</span>
-      </div>          
-      <div class="progress-quiz">            
-        <div class="progress-bar" :style="{ width: progressWidth }"></div>
-      </div>
-      <div>
-        <span>Theme</span><span>{{ getCurrentQuestion.theme }}</span>
-      </div>
-      <div>
-        Time
-      </div>
-      <div>
-        <button @click="goToHome">{{ $t('return') }}</button>
-      </div>
-    </div>
-    <div class="quiz-col2">
-      <section class="quiz-quiz" v-if="!quizCompleted">	
-        <div class="quiz-info">
-          <span class="question">{{ getCurrentQuestion.question }}</span>
-        </div>	
-        <div class="options">
-          <label 
-            v-for="(option, index) in getCurrentQuestion.options" 
-            :key="'option' + index" 
-            :class="`option ${
-              getCurrentQuestion.selected == index 
-                ? index == getCurrentQuestion.answer 
-                  ? 'correct' 
-                  : 'wrong'
-                : ''
-            } ${
-              getCurrentQuestion.selected != null &&
-              index != getCurrentQuestion.selected
-                ? 'disabled'
-                : ''
-            }`">
-            <input 
-              type="radio" 
-              :id="'option' + index" 
-              :name="getCurrentQuestion.index" 
-              :value="index" 
-              v-model="getCurrentQuestion.selected" 
-              :disabled="getCurrentQuestion.selected"
-              @change="setAnswer" 
-            />
-            <span>{{ option }}</span>
-          </label>
-        </div>			
-      </section>
-      <section v-else>
-        <h2>You have finished the quiz!</h2>
-        <p>Your score is {{ score }}/{{ questions.length }}</p>
-      </section>
-    </div>  
-  </div>  
-  -->
 </template>
   
 <script>
-import { useRouter } from 'vue-router';
+import { navigationMixin } from '../mixins/navigationMixin';
 
 export default {
   name: "QuizView",
-  setup() {
-    const router = useRouter();
-
-    const goToResults = () => {
-      router.push('/results');
-    };
-
-    return { goToResults };
-  },
+  mixins: [navigationMixin],
   data() {
-    return {
-      progress: 0,
-      quizCompleted: false,
-      currentQuestion: 0,
-      questions: [
-        {
-          question: 'What is Vue?',
-          answer: 0,
-          options: [
-            'A framework',
-            'A library',
-            'A type of hat'
-          ],
-          theme: "theme A",
-          selected: null
-        },
-        {
-          question: 'What is Vuex used for?',
-          answer: 2,
-          options: [
-            'Eating a delicious snack',
-            'Viewing things',
-            'State management'
-          ],          
-          theme: "theme B",
-          selected: null
-        },
-        {
-          question: 'What is Vue Router?',
-          answer: 1,
-          options: [
-            'An ice cream maker',
-            'A routing library for Vue',
-            'Burger sauce'
-          ],
-          theme: "theme C",
-          selected: null
-        }
-      ]
+    return {   
+      timestamp: 0,
+      timeLeft: 0,
+      timer: null,   // Timer reference
+      questions: [],
+      stats: [],
+      index: 0  ,
+      selectedAnswersList: []
     };
+  },
+  created() {
+    this.checkBadValuesForRedirection();
+
+    this.questions = this.$questions;
+    this.stats = this.$stats;    
+    this.timestamp = this.$timestamp;
+    this.timeLeft = this.timestamp.value;    
+  },
+  mounted() {    
+    this.startTimer();
+  },
+  beforeUnmount() {
+    clearInterval(this.timer);  // Clear the timer when the component is destroyed
   },
   methods: {
-    setAnswer(e) {
-      this.questions[this.currentQuestion].selected = e.target.value;
-      e.target.value = null;
-
-      if (this.currentQuestion < this.questions.length - 1) {
-        this.currentQuestion++;
-        return;
+    checkBadValuesForRedirection() {
+      if (this.$questions == undefined || this.$questions == null || !this.$questions || this.$questions.length == 0 || 
+      !this.$stats == undefined || this.$stats == null || !this.$stats || this.$stats.length == 0 ||
+      !this.$timestamp) {
+        this.goToHome();
       }
-      this.quizCompleted = true;
+    },
+    startTimer() {
+      this.timer = setInterval(() => {
+        if (this.timeLeft > 1) {
+          this.timeLeft--;  // Decrease timeLeft by 1 every second
+        } else {
+          this.goNextQuestion(null);  // Automatically move to the next question when time runs out
+        }
+      }, 1000);
+    },
+    getNameByCategoryId(categoryId) {
+      const item = this.stats.find(entry => entry.categoryId === categoryId);
+      return item ? item.name : "Categorie inconnue";
+    },
+    goNextQuestion(option) {   
+      this.timeLeft = this.timestamp.value;       
+      this.selectedAnswersList.push(option);
+      
+      if (this.index == this.questions.length - 1) {               
+        clearInterval(this.timer);
+        this.$setAnswers(this.selectedAnswersList);
+        this.goToResults();
+      } else {
+        this.index++;        
+      }
+    },
+    shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
     }
   },  
-  computed: {
-    progressWidth() {
-      if (this.quizCompleted === true) {
-        return `100%`;
-      }
-      return `${ this.currentQuestion /  this.questions.length * 100 }%`;
-    },
-    score() {
-      console.log("score")
-
-      let value = 0;
-      this.questions.forEach(q => {
-        console.log("q.selected", q.selected)
-        
-        if (q.selected != null && q.answer === q.selected) {
-          value++;
-        }
-      });
-      return value;
-    },
-    getCurrentQuestion() {
-      let question = this.questions[this.currentQuestion];
-      question.index = this.currentQuestion;
-      return question;
-    }
+  computed: {  
+    currentQuestion() {      
+      return this.questions[this.index];
+    },    
+    randomizedOptions() {
+      return this.shuffleArray([...this.currentQuestion.options]);
+    }  
   }
 };
 </script>
@@ -173,95 +117,24 @@ export default {
 @import '@/assets/styles/variables';
 
 .game {
- 
-}
-</style>
-
-<style lang="scss">
-/*
-.quiz {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-  height: 100vh;
-
-  &-col1 {
-    .progress-question {
-
-    }
-    .progress-quiz {      
-      height: 0.4em;
+  .quiz-col1 {
+    .progress-container {
       width: 100%;
-      border-radius: 0.5em;
-      background: #ffffff;
+      background-color: #f3f3f3;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
       .progress-bar {
-        height: 100%;        
-        border-radius: 0.5em;
-        background-color: #76c7c0;
+        height: 100%;
+        background-color: #4caf50; /* Green */
         transition: width 0.3s ease;
       }
     }
   }
+}
+</style>
 
-
-  &-col2 {
-    .quiz-quiz {
-      background-color: #382a4b;
-      padding: 1rem;
-      width: 100%;
-      max-width: 640px;
-
-      .quiz-info {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-
-        .question {
-          color: #8F8F8F;
-          font-size: 1.25rem;
-        }
-      }
-
-      .options {
-        margin-bottom: 1rem;
-
-        .option {
-          padding: 1rem;
-          display: block;
-          background-color: #271c36;
-          margin-bottom: 0.5rem;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          color: #FFFFFF;
-
-          &:hover {
-            background-color: #2d213f;
-          }
-
-          &.correct {
-            background-color: #2cce7d;
-          }
-
-          &.wrong {
-            background-color: #ff5a5f;
-          }
-
-          &:last-of-type {
-            margin-bottom: 0;
-          }
-
-          &.disabled {
-            opacity: 0.5;
-          }
-
-          input {
-            display: none;
-          }
-        }
-      }
-    }
-  }
-}*/
+<style lang="scss">
 </style>

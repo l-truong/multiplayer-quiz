@@ -27,7 +27,7 @@ export const questionsService = {
             throw new Error('Invalid count value. Please provide a positive number.');
         }
         
-        const params = categories.length > 0 ? { categories: categories } : {};
+        const params = categories.length > 0 ? { params : {categories: categories } } : {};
         return axios.get(`/questions/random/${count}`, params)
             .then(res => res.data)
             .catch(err => {

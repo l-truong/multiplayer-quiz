@@ -1,5 +1,4 @@
 /* Vue Router configuration */
-
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import CategoriesView from '../views/Categories.vue'

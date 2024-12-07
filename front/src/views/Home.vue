@@ -46,22 +46,11 @@
 </template>
 
 <script>
-import { useRouter } from "vue-router";
+import { navigationMixin } from '../mixins/navigationMixin';
 
 export default {
   name: "HomeView",
-  setup() {
-    const router = useRouter();
-
-    const goToQuiz = () => {
-      router.push("/quiz");
-    };
-    const goToCategories = () => {
-      router.push("/categories");
-    };
-
-    return { goToQuiz, goToCategories };
-  },
+  mixins: [navigationMixin],
   data() {
     return {
       name: "",

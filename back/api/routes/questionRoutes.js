@@ -14,10 +14,18 @@ const Category = require('../models/category');
 // Get all questions
 router.get('/', async (req, res) => {
     try {
-        if (req.body.categories !== undefined) {
-            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {               
+        if (req.query.categories !== undefined) {
+            let categories = null;
+
+            if (typeof req.query.categories === 'string') {
+                categories = [req.query.categories];
+            } else {
+                categories = req.query.categories
+            }
+            
+            if (Array.isArray(categories) && categories.length > 0 && categories.every(item => item !== '' && item !== null)) {               
                 let categoryIdsToCheck = [];
-                req.body.categories.forEach(category => {
+                categories.forEach(category => {
                     categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
                 });              
 
@@ -72,10 +80,18 @@ router.get('/eng', async (req, res, next) => {
     
     try {                 
         let questions = [];
-        if (req.body.categories !== undefined) {          
-            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {
+        if (req.query.categories !== undefined) {  
+            let categories = null;
+
+            if (typeof req.query.categories === 'string') {
+                categories = [req.query.categories];
+            } else {
+                categories = req.query.categories
+            }
+
+            if (Array.isArray(categories) && categories.length > 0 && categories.every(item => item !== '' && item !== null)) {
                 let categoryIdsToCheck = [];
-                req.body.categories.forEach(category => {
+                categories.forEach(category => {
                     categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
                 });              
 
@@ -89,7 +105,7 @@ router.get('/eng', async (req, res, next) => {
             } else {
                 return res.status(500).json({                     
                     message: 'An error occurred',
-                    error: 'Parameter categories should be an array and not contain null or empty values'
+                    error: 'Parameter categories should not be null'
                 });
             }            
         } else {
@@ -140,10 +156,18 @@ router.get('/fr', async (req, res, next) => {
 }, async (req, res) => {
     try {       
         let questions = [];
-        if (req.body.categories !== undefined) {
-            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {
+        if (req.query.categories !== undefined) {
+            let categories = null;
+
+            if (typeof req.query.categories === 'string') {
+                categories = [req.query.categories];
+            } else {
+                categories = req.query.categories
+            }
+
+            if (Array.isArray(categories) && categories.length > 0 && categories.every(item => item !== '' && item !== null)) {
                 let categoryIdsToCheck = [];
-                req.body.categories.forEach(category => {
+                categories.forEach(category => {
                     categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
                 });              
 
@@ -157,7 +181,7 @@ router.get('/fr', async (req, res, next) => {
             } else {
                 return res.status(500).json({                     
                     message: 'An error occurred',
-                    error: 'Parameter categories should be an array and not contain null or empty values'
+                    error: 'Parameter categories should not be null'
                 });
             }            
         } else {
@@ -206,11 +230,20 @@ router.get('/random/:random?', async (req, res) => {
     }
 
     try {
-        let questions = [];
-        if (req.body.categories !== undefined) {
-            if (Array.isArray(req.body.categories) && req.body.categories.length > 0 && req.body.categories.every(item => item !== '' && item !== null)) {
+        let questions = [];        
+
+        if (req.query.categories !== undefined) {    
+            let categories = null;
+
+            if (typeof req.query.categories === 'string') {
+                categories = [req.query.categories];
+            } else {
+                categories = req.query.categories
+            }
+            
+            if (Array.isArray(categories) && categories.length > 0 && categories.every(item => item !== '' && item !== null)) {
                 let categoryIdsToCheck = [];
-                req.body.categories.forEach(category => {
+                categories.forEach(category => {
                     categoryIdsToCheck.push(new mongoose.Types.ObjectId(category));
                 });              
 
@@ -224,7 +257,7 @@ router.get('/random/:random?', async (req, res) => {
             } else {
                 return res.status(500).json({                     
                     message: 'An error occurred',
-                    error: 'Parameter categories should be an array and not contain null or empty values'
+                    error: 'Parameter categories should not be null'
                 });
             }            
         } else {

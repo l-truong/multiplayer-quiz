@@ -1,0 +1,34 @@
+{
+    "home": {
+        "welcomeMessage": "Welcome",
+        "name": "Name",
+        "namePlaceholder": "You Name",
+        "room": "Room",
+        "join": "Join a room",
+        "create": "Create a room",
+        "roomId": "Room Id",
+        "roomIdPlaceholder": "Room Id",
+        "requiredField": "Please complete this field",
+        "startQuiz": "Start Quiz"
+    },
+    "categories": {
+        "title": "Create a game",
+        "numberOfQuestions": "Number of questions",
+        "questionRange": "questions",
+        "categories": "Topics",
+        "timer": "Timer",
+        "timesValue": "seconds",
+        "copyLink": "Link",
+        "return": "Back",
+        "start": "Start" 
+    },    
+    "game": {
+        "title": "Question"
+    },
+    "results": {
+        "score": "Score",
+        "title": "Results",
+        "tryAgain": "Try again",
+        "home": "Home"
+    }
+}
